@@ -7,6 +7,7 @@ from cython.parallel import threadid
 from libc.stdlib cimport malloc, realloc, free, rand, srand, abs
 
 cimport types, data, kd_tree, utils, mol_math
+from libc.stdio cimport printf
 
 
 cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
@@ -98,9 +99,9 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                         link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
                         brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
                         srand(6)
-                        link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.broken = ((par.broken + par2.broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         srand(7)
-                        link.ebroken = ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = ((par.ebroken + par2.ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1

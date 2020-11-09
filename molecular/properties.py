@@ -124,6 +124,14 @@ def define_props():
         name="Rand Damping", description=descriptions.LINK_DAMPING_RANDOM,
         min=0, max=1, default=0, precision=6, subtype='FACTOR'
     )
+    items = (
+        ('CONSTANT', 'Constant', ''),
+        ('RANDOM', 'Random', ''),
+        ('TEXTURE', 'Texture', '')
+    )
+    parset.mol_link_broken_mode = bpy.props.EnumProperty(
+        name="Broken Mode", items=items
+    )
     parset.mol_link_broken = bpy.props.FloatProperty(
         name="Broken", description=descriptions.LINK_BROKEN,
         min=0, default=0.5, precision=6
@@ -133,6 +141,10 @@ def define_props():
         description=descriptions.LINK_BROKEN_RANDOM,
         min=0, max=1, default=0, precision=6, subtype='FACTOR'
     )
+    parset.mol_link_brokentex_coeff = bpy.props.FloatProperty(
+        name="Multiply Coefficient",  default=1.0
+    )
+    parset.mol_link_brokentex = bpy.props.StringProperty(name="Broken Texture")
 
     parset.mol_link_samevalue = bpy.props.BoolProperty(
         name="Same values for compression/expansion",
@@ -174,6 +186,10 @@ def define_props():
         description=descriptions.LINK_EXPENSION_BROKEN_RANDOM,
         min=0, max=1, default=0, precision=6, subtype='FACTOR'
     )
+    parset.mol_link_ebrokentex_coeff = bpy.props.FloatProperty(
+        name="Multiply Coefficient", default=1.0
+    )
+    parset.mol_link_ebrokentex = bpy.props.StringProperty(name="Broken Texture")
 
     parset.mol_relink_group = bpy.props.IntProperty(
         name='Only links with:',

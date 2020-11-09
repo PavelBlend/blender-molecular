@@ -141,9 +141,63 @@ class MolecularInitLinksPanel(MolecularBasePanel):
         row = layout.row()
         row.prop(psys.settings, "mol_link_damp")
         row.prop(psys.settings, "mol_link_damprand")
-        row = layout.row()
-        row.prop(psys.settings, "mol_link_broken")
-        row.prop(psys.settings, "mol_link_brokenrand")
+
+        broken_box = layout.box()
+        broken_box.label(text='Link Broken Params:')
+
+        if not psys.settings.mol_link_samevalue:
+            row = broken_box.row()
+            row.label(text='Mode')
+            row.prop(psys.settings, 'mol_link_broken_mode', text='')
+            box = broken_box.box()
+            box.label(text='Compression:')
+        else:
+            box = broken_box
+            row = box.row()
+            row.label(text='Mode')
+            row.prop(psys.settings, 'mol_link_broken_mode', text='')
+
+        if psys.settings.mol_link_broken_mode in ('CONSTANT', 'RANDOM'):
+            row = box.row()
+            row.label(text='Broken Value')
+            row.prop(psys.settings, 'mol_link_broken', text='')
+            if psys.settings.mol_link_broken_mode == 'RANDOM':
+                row = box.row()
+                row.label(text='Broken Random')
+                row.prop(psys.settings, 'mol_link_brokenrand', text='')
+            if not psys.settings.mol_link_samevalue:
+                box = broken_box.box()
+                box.label(text='Expansion:')
+                row = box.row()
+                row.label(text='Broken Value')
+                row.prop(psys.settings, 'mol_link_ebroken', text='')
+                if psys.settings.mol_link_broken_mode == 'RANDOM':
+                    row = box.row()
+                    row.label(text='Broken Random')
+                    row.prop(psys.settings, 'mol_link_ebrokenrand', text='')
+        elif psys.settings.mol_link_broken_mode == 'TEXTURE':
+            row = box.row()
+            row.label(text='Multiply Coefficient')
+            row.prop(psys.settings, 'mol_link_brokentex_coeff', text='')
+            row = box.row()
+            row.label(text='Broken Texture')
+            row.prop_search(
+                psys.settings, 'mol_link_brokentex',
+                bpy.data, 'textures', text=''
+            )
+            if not psys.settings.mol_link_samevalue:
+                box = broken_box.box()
+                box.label(text='Expansion:')
+                row = box.row()
+                row.label(text='Multiply Coefficient')
+                row.prop(psys.settings, 'mol_link_ebrokentex_coeff', text='')
+                row = box.row()
+                row.label(text='Broken Texture')
+                row.prop_search(
+                    psys.settings, 'mol_link_ebrokentex',
+                    bpy.data, 'textures', text=''
+                )
+
         if not psys.settings.mol_link_samevalue:
             layout.label(text='Expansion:')
             row = layout.row()
@@ -158,9 +212,6 @@ class MolecularInitLinksPanel(MolecularBasePanel):
             row.prop(psys.settings, "mol_link_edamp")
             row.prop(psys.settings, "mol_link_edamprand")
             row = layout.row()
-            row.enabled = not psys.settings.mol_link_samevalue
-            row.prop(psys.settings, "mol_link_ebroken")
-            row.prop(psys.settings, "mol_link_ebrokenrand")
 
 
 class MolecularNewLinksPanel(MolecularBasePanel):

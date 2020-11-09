@@ -110,6 +110,18 @@ cpdef init(importdata):
             data.psys[i].link_group = importdata[i + 1][6][45]
             data.psys[i].other_link_active = importdata[i + 1][6][46]
 
+            # broken texture
+            if importdata[i + 1][6][47]:
+                data.parlist[jj].broken = importdata[i + 1][6][47][ii]
+                # ebroken texture
+                if importdata[i + 1][6][48]:
+                    data.parlist[jj].ebroken = importdata[i + 1][6][48][ii]
+                else:
+                    data.parlist[jj].ebroken = data.parlist[jj].broken
+            else:
+                data.parlist[jj].broken = importdata[i + 1][6][15]
+                data.parlist[jj].ebroken = importdata[i + 1][6][22]
+
             data.parlist[jj].sys = &data.psys[i]
             data.parlist[jj].collided_with = <int *>malloc(1 * cython.sizeof(int))
             data.parlist[jj].collided_num = 0

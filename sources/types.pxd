@@ -115,6 +115,8 @@ cdef struct Particle:
     int *neighbours
     int neighboursnum
     int neighboursmax
+    float broken
+    float ebroken
 
 
 cdef struct Pool:

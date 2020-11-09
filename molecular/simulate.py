@@ -73,7 +73,7 @@ def pack_data(context, initiate):
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
 
-                    params = [0] * 47
+                    params = [0] * 49
 
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
@@ -127,6 +127,38 @@ def pack_data(context, initiate):
                     params[44] = psys.settings.mol_link_friction  
                     params[45] = psys.settings.mol_link_group 
                     params[46] = psys.settings.mol_other_link_active 
+                    # broken texture
+                    params[47] = None    # broken
+                    params[48] = None    # ebroken
+                    if psys.settings.mol_link_broken_mode == 'TEXTURE':
+                        broken_tex = bpy.data.textures.get(
+                            psys.settings.mol_link_brokentex, None
+                        )
+                        ebroken_tex = bpy.data.textures.get(
+                            psys.settings.mol_link_ebrokentex, None
+                        )
+                        if broken_tex:
+                            params[47] = []
+                            for i in range(0, len(par_loc), 3):
+                                broken = broken_tex.evaluate((
+                                    par_loc[i],
+                                    par_loc[i + 1],
+                                    par_loc[i + 2]
+                                ))[-1]
+                                params[47].append(broken * psys.settings.mol_link_brokentex_coeff)
+                            params[16] = 0    # mol_link_brokenrand = 0
+                            params[23] = 0    # mol_link_ebrokenrand = 0
+                            if psys.settings.mol_link_samevalue or not ebroken_tex:
+                                params[48] = params[47]
+                            else:
+                                params[48] = []
+                                for i in range(0, len(par_loc), 3):
+                                    broken = ebroken_tex.evaluate((
+                                        par_loc[i],
+                                        par_loc[i + 1],
+                                        par_loc[i + 2]
+                                    ))[-1]
+                                    params[48].append(broken * psys.settings.mol_link_ebrokentex_coeff)
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 
