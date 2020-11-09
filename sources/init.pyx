@@ -111,11 +111,11 @@ cpdef init(importdata):
             data.psys[i].other_link_active = importdata[i + 1][6][46]
 
             # broken texture
-            if importdata[i + 1][6][47]:
-                data.parlist[jj].broken = importdata[i + 1][6][47][ii]
+            if importdata[i + 1][6][53]:
+                data.parlist[jj].broken = importdata[i + 1][6][53][ii]
                 # ebroken texture
-                if importdata[i + 1][6][48]:
-                    data.parlist[jj].ebroken = importdata[i + 1][6][48][ii]
+                if importdata[i + 1][6][54]:
+                    data.parlist[jj].ebroken = importdata[i + 1][6][54][ii]
                 else:
                     data.parlist[jj].ebroken = data.parlist[jj].broken
             else:

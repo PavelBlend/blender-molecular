@@ -2,7 +2,7 @@ import multiprocessing
 
 import bpy
 
-from . import descriptions
+from . import descriptions, defaults
 
 
 def define_density_props(parset):
@@ -96,21 +96,27 @@ def define_customizable_props_values(
     base = 'link'
     if relink:
         base = 're' + base
+    value_prop_name = 'mol_{}_{}'.format(base, name)
+    default, minimum, maximum = defaults.values[value_prop_name]
     value_prop = bpy.props.FloatProperty(
         name=name.capitalize(), description='',
-        min=0.0, default=0.5, precision=6
+        min=minimum, max=maximum, default=default, precision=6
     )
-    setattr(parset, 'mol_{}_{}'.format(base, name), value_prop)
+    setattr(parset, value_prop_name, value_prop)
+    value_random_prop_name = 'mol_{}_{}rand'.format(base, name)
+    default, minimum, maximum = defaults.values[value_random_prop_name]
     value_random_prop = bpy.props.FloatProperty(
         name='Random {}'.format(name.capitalize()),
         description='',
-        min=minimum, max=maximum, default=0.0, precision=6, subtype='FACTOR'
+        min=minimum, max=maximum, default=default, precision=6, subtype='FACTOR'
     )
-    setattr(parset, 'mol_{}_{}rand'.format(base, name), value_random_prop)
+    setattr(parset, value_random_prop_name, value_random_prop)
+    tex_coeff_prop_name = 'mol_{}_{}tex_coeff'.format(base, name)
+    default, minimum, maximum = defaults.values[tex_coeff_prop_name]
     tex_coeff_prop = bpy.props.FloatProperty(
-        name="Multiply Coefficient",  default=1.0
+        name="Multiply Coefficient", default=default, min=minimum, max=maximum
     )
-    setattr(parset, 'mol_{}_{}tex_coeff'.format(base, name), tex_coeff_prop)
+    setattr(parset, tex_coeff_prop_name, tex_coeff_prop)
     tex_prop = bpy.props.StringProperty(name='Broken Texture')
     setattr(parset, 'mol_{}_{}tex'.format(base, name), tex_prop)
 
@@ -257,7 +263,7 @@ def define_props():
         name="CPU",
         description=descriptions.CPU,
         default=multiprocessing.cpu_count(),
-        min=1, max =multiprocessing.cpu_count()
+        min=1, max=multiprocessing.cpu_count()
     )
     bpy.types.Scene.mol_exportdata = []
     bpy.types.Scene.mol_minsize = bpy.props.FloatProperty()

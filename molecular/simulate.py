@@ -5,6 +5,46 @@ import bpy
 from .utils import get_object
 
 
+def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp=True):
+    mode = getattr(psys.settings, 'mol_{}link_{}_mode'.format(prefix, name))
+    if mode == 'TEXTURE':
+        tex = bpy.data.textures.get(
+            getattr(psys.settings, 'mol_{}link_{}tex'.format(prefix, name), None)
+        )
+        if exp:
+            etex = bpy.data.textures.get(
+                getattr(psys.settings, 'mol_{}link_e{}tex'.format(prefix, name), None)
+            )
+        else:
+            exp = None
+        if tex:
+            params[index] = []
+            for i in range(0, len(par_loc), 3):
+                value = tex.evaluate((
+                    par_loc[i],
+                    par_loc[i + 1],
+                    par_loc[i + 2]
+                ))[-1]
+                params[index].append(
+                    value * getattr(psys.settings, 'mol_{}link_{}tex_coeff'.format(prefix, name))
+                )
+            for clear_index in clear_indexes:
+                params[clear_index] = 0
+            if getattr(psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name)) or not etex:
+                params[index + 1] = params[index]
+            else:
+                params[index + 1] = []
+                for i in range(0, len(par_loc), 3):
+                    value = etex.evaluate((
+                        par_loc[i],
+                        par_loc[i + 1],
+                        par_loc[i + 2]
+                    ))[-1]
+                    params[index + 1].append(
+                        value * getattr(psys.settings, 'mol_{}link_e{}tex_coeff'.format(prefix, name))
+                    )
+
+
 def pack_data(context, initiate):
     psyslen = 0
     parnum = 0
@@ -55,25 +95,27 @@ def pack_data(context, initiate):
                     if bpy.context.scene.mol_minsize > min(par_size):
                         bpy.context.scene.mol_minsize = min(par_size)
 
-                    if psys.settings.mol_link_samevalue:
+                    if psys.settings.mol_link_stiff_samevalue:
                         psys.settings.mol_link_estiff = psys.settings.mol_link_stiff
                         psys.settings.mol_link_estiffrand = psys.settings.mol_link_stiffrand
-                        psys.settings.mol_link_estiffexp = psys.settings.mol_link_stiffexp
+                    if psys.settings.mol_link_damp_samevalue:
                         psys.settings.mol_link_edamp = psys.settings.mol_link_damp
                         psys.settings.mol_link_edamprand = psys.settings.mol_link_damprand
+                    if psys.settings.mol_link_broken_samevalue:
                         psys.settings.mol_link_ebroken = psys.settings.mol_link_broken
                         psys.settings.mol_link_ebrokenrand = psys.settings.mol_link_brokenrand
 
-                    if psys.settings.mol_relink_samevalue:
+                    if psys.settings.mol_relink_stiff_samevalue:
                         psys.settings.mol_relink_estiff = psys.settings.mol_relink_stiff
                         psys.settings.mol_relink_estiffrand = psys.settings.mol_relink_stiffrand
-                        psys.settings.mol_relink_estiffexp = psys.settings.mol_relink_stiffexp
+                    if psys.settings.mol_relink_damp_samevalue:
                         psys.settings.mol_relink_edamp = psys.settings.mol_relink_damp
                         psys.settings.mol_relink_edamprand = psys.settings.mol_relink_damprand
+                    if psys.settings.mol_relink_broken_samevalue:
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
 
-                    params = [0] * 49
+                    params = [0] * 60
 
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
@@ -92,14 +134,14 @@ def pack_data(context, initiate):
                     params[9] = psys.settings.mol_link_tensionrand
                     params[10] = psys.settings.mol_link_stiff
                     params[11] = psys.settings.mol_link_stiffrand
-                    params[12] = psys.settings.mol_link_stiffexp
+                    params[12] = 1.0    # mol_link_stiffexp
                     params[13] = psys.settings.mol_link_damp
                     params[14] = psys.settings.mol_link_damprand
                     params[15] = psys.settings.mol_link_broken
                     params[16] = psys.settings.mol_link_brokenrand
                     params[17] = psys.settings.mol_link_estiff
                     params[18] = psys.settings.mol_link_estiffrand
-                    params[19] = psys.settings.mol_link_estiffexp
+                    params[19] = 1.0    # mol_link_estiffexp
                     params[20] = psys.settings.mol_link_edamp
                     params[21] = psys.settings.mol_link_edamprand
                     params[22] = psys.settings.mol_link_ebroken
@@ -111,54 +153,37 @@ def pack_data(context, initiate):
                     params[28] = psys.settings.mol_relink_tension
                     params[29] = psys.settings.mol_relink_tensionrand
                     params[30] = psys.settings.mol_relink_stiff
-                    params[31] = psys.settings.mol_relink_stiffexp
+                    params[31] = 1.0    # mol_relink_stiffexp
                     params[32] = psys.settings.mol_relink_stiffrand
                     params[33] = psys.settings.mol_relink_damp
                     params[34] = psys.settings.mol_relink_damprand
                     params[35] = psys.settings.mol_relink_broken
                     params[36] = psys.settings.mol_relink_brokenrand
                     params[37] = psys.settings.mol_relink_estiff
-                    params[38] = psys.settings.mol_relink_estiffexp
+                    params[38] = 1.0    # mol_relink_estiffexp
                     params[39] = psys.settings.mol_relink_estiffrand
                     params[40] = psys.settings.mol_relink_edamp
                     params[41] = psys.settings.mol_relink_edamprand
                     params[42] = psys.settings.mol_relink_ebroken
                     params[43] = psys.settings.mol_relink_ebrokenrand
-                    params[44] = psys.settings.mol_link_friction  
-                    params[45] = psys.settings.mol_link_group 
-                    params[46] = psys.settings.mol_other_link_active 
-                    # broken texture
-                    params[47] = None    # broken
-                    params[48] = None    # ebroken
-                    if psys.settings.mol_link_broken_mode == 'TEXTURE':
-                        broken_tex = bpy.data.textures.get(
-                            psys.settings.mol_link_brokentex, None
-                        )
-                        ebroken_tex = bpy.data.textures.get(
-                            psys.settings.mol_link_ebrokentex, None
-                        )
-                        if broken_tex:
-                            params[47] = []
-                            for i in range(0, len(par_loc), 3):
-                                broken = broken_tex.evaluate((
-                                    par_loc[i],
-                                    par_loc[i + 1],
-                                    par_loc[i + 2]
-                                ))[-1]
-                                params[47].append(broken * psys.settings.mol_link_brokentex_coeff)
-                            params[16] = 0    # mol_link_brokenrand = 0
-                            params[23] = 0    # mol_link_ebrokenrand = 0
-                            if psys.settings.mol_link_samevalue or not ebroken_tex:
-                                params[48] = params[47]
-                            else:
-                                params[48] = []
-                                for i in range(0, len(par_loc), 3):
-                                    broken = ebroken_tex.evaluate((
-                                        par_loc[i],
-                                        par_loc[i + 1],
-                                        par_loc[i + 2]
-                                    ))[-1]
-                                    params[48].append(broken * psys.settings.mol_link_ebrokentex_coeff)
+                    params[44] = psys.settings.mol_link_friction
+                    params[45] = psys.settings.mol_link_group
+                    params[46] = psys.settings.mol_other_link_active
+
+                    # pack textures
+                    pack_tex_data(psys, 'tension', '', 47, (9, ), params, par_loc, exp=False)
+                    pack_tex_data(psys, 'stiff', '', 49, (11, 18), params, par_loc)
+                    pack_tex_data(psys, 'damp', '', 51, (14, 21), params, par_loc)
+                    pack_tex_data(psys, 'broken', '', 53, (16, 23), params, par_loc)
+
+                    pack_tex_data(psys, 'tension', 're', 47, (29, ), params, par_loc, exp=False)
+                    pack_tex_data(psys, 'stiff', 're', 49, (32, 39), params, par_loc)
+                    pack_tex_data(psys, 'damp', 're', 51, (34, 41), params, par_loc)
+                    pack_tex_data(psys, 'broken', 're', 53, (36, 43), params, par_loc)
+
+                    pack_tex_data(psys, 'friction', '', 55, (), params, par_loc, exp=False)
+                    pack_tex_data(psys, 'friction', 're', 57, (), params, par_loc, exp=False)
+                    pack_tex_data(psys, 'chance', 're', 59, (), params, par_loc, exp=False)
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 

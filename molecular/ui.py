@@ -142,7 +142,7 @@ class MolecularCollisionPanel(MolecularBasePanel):
         # for the data    
         psys_eval = get_object(context, context.object).particle_systems.active
         # self collision
-        draw_prop(layout, stg, 'mol_selfcollision_active', 'Other', boolean=True)
+        draw_prop(layout, stg, 'mol_selfcollision_active', 'Self', boolean=True)
         # other collision
         draw_prop(layout, stg, 'mol_othercollision_active', 'Other', boolean=True)
         if stg.mol_othercollision_active:
