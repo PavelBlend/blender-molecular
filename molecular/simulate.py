@@ -144,45 +144,81 @@ def pack_data(context, initiate):
 
                     params[7] = psys.settings.mol_link_max
                     params[8] = psys.settings.mol_link_tension
-                    params[9] = psys.settings.mol_link_tensionrand
+                    if psys.settings.mol_link_tension_mode == 'RANDOM':
+                        params[9] = psys.settings.mol_link_tensionrand
+                    else:
+                        params[9] = 0.0
                     params[10] = psys.settings.mol_link_stiff
-                    params[11] = psys.settings.mol_link_stiffrand
+                    if psys.settings.mol_link_stiff_mode == 'RANDOM':
+                        params[11] = psys.settings.mol_link_stiffrand
+                        params[18] = psys.settings.mol_link_estiffrand
+                    else:
+                        params[11] = 0.0
+                        params[18] = 0.0
                     params[12] = 1.0    # mol_link_stiffexp
                     params[13] = psys.settings.mol_link_damp
-                    params[14] = psys.settings.mol_link_damprand
+                    if psys.settings.mol_link_damp_mode == 'RANDOM':
+                        params[14] = psys.settings.mol_link_damprand
+                        params[21] = psys.settings.mol_link_edamprand
+                    else:
+                        params[14] = 0.0
+                        params[21] = 0.0
                     params[15] = psys.settings.mol_link_broken
-                    params[16] = psys.settings.mol_link_brokenrand
+                    if psys.settings.mol_link_broken_mode == 'RANDOM':
+                        params[16] = psys.settings.mol_link_brokenrand
+                        params[23] = psys.settings.mol_link_ebrokenrand
+                    else:
+                        params[16] = 0.0
+                        params[23] = 0.0
                     params[17] = psys.settings.mol_link_estiff
-                    params[18] = psys.settings.mol_link_estiffrand
                     params[19] = 1.0    # mol_link_estiffexp
                     params[20] = psys.settings.mol_link_edamp
-                    params[21] = psys.settings.mol_link_edamprand
                     params[22] = psys.settings.mol_link_ebroken
-                    params[23] = psys.settings.mol_link_ebrokenrand
                     params[24] = psys.settings.mol_relink_group
                     params[25] = psys.settings.mol_relink_chance
-                    params[26] = psys.settings.mol_relink_chancerand
+                    if psys.settings.mol_relink_chance_mode == 'RANDOM':
+                        params[26] = psys.settings.mol_relink_chancerand
+                    else:
+                        params[26] = 0.0
                     params[27] = psys.settings.mol_relink_max
                     params[28] = psys.settings.mol_relink_tension
-                    params[29] = psys.settings.mol_relink_tensionrand
+                    if psys.settings.mol_relink_tension_mode == 'RANDOM':
+                        params[29] = psys.settings.mol_relink_tensionrand
+                    else:
+                        params[29] = 0.0
                     params[30] = psys.settings.mol_relink_stiff
                     params[31] = 1.0    # mol_relink_stiffexp
-                    params[32] = psys.settings.mol_relink_stiffrand
+                    if psys.settings.mol_relink_stiff_mode == 'RANDOM':
+                        params[32] = psys.settings.mol_relink_stiffrand
+                        params[39] = psys.settings.mol_relink_estiffrand
+                    else:
+                        params[32] = 0.0
+                        params[39] = 0.0
                     params[33] = psys.settings.mol_relink_damp
-                    params[34] = psys.settings.mol_relink_damprand
+                    if psys.settings.mol_relink_damp_mode == 'RANDOM':
+                        params[34] = psys.settings.mol_relink_damprand
+                        params[41] = psys.settings.mol_relink_edamprand
+                    else:
+                        params[34] = 0.0
+                        params[41] = 0.0
                     params[35] = psys.settings.mol_relink_broken
-                    params[36] = psys.settings.mol_relink_brokenrand
+                    if psys.settings.mol_relink_broken_mode == 'RANDOM':
+                        params[36] = psys.settings.mol_relink_brokenrand
+                        params[43] = psys.settings.mol_relink_ebrokenrand
+                    else:
+                        params[36] = 0.0
+                        params[43] = 0.0
                     params[37] = psys.settings.mol_relink_estiff
                     params[38] = 1.0    # mol_relink_estiffexp
-                    params[39] = psys.settings.mol_relink_estiffrand
                     params[40] = psys.settings.mol_relink_edamp
-                    params[41] = psys.settings.mol_relink_edamprand
                     params[42] = psys.settings.mol_relink_ebroken
-                    params[43] = psys.settings.mol_relink_ebrokenrand
                     params[44] = psys.settings.mol_link_friction
                     params[45] = psys.settings.mol_link_group
                     params[46] = psys.settings.mol_other_link_active
-                    params[47] = psys.settings.mol_link_frictionrand
+                    if psys.settings.mol_link_friction_mode == 'RANDOM':
+                        params[47] = psys.settings.mol_link_frictionrand
+                    else:
+                        params[47] = 0.0
 
                     # pack textures
                     index = 48
