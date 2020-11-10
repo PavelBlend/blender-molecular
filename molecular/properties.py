@@ -98,9 +98,13 @@ def define_customizable_props_values(
         base = 're' + base
     value_prop_name = 'mol_{}_{}'.format(base, name)
     default, minimum, maximum = defaults.values[value_prop_name]
+    if minimum == 0.0 and maximum == 1.0:
+        subtype = 'FACTOR'
+    else:
+        subtype = 'NONE'
     value_prop = bpy.props.FloatProperty(
         name=name.capitalize(), description='',
-        min=minimum, max=maximum, default=default, precision=6
+        min=minimum, max=maximum, default=default, precision=6, subtype=subtype
     )
     setattr(parset, value_prop_name, value_prop)
     value_random_prop_name = 'mol_{}_{}rand'.format(base, name)

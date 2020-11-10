@@ -4,7 +4,7 @@
 
 cimport cython
 from cython.parallel import threadid
-from libc.stdlib cimport malloc, realloc, free, rand, srand, abs
+from libc.stdlib cimport malloc, realloc, free, rand, abs
 
 cimport types, data, kd_tree, utils, mol_math
 from libc.stdio cimport printf
@@ -16,19 +16,58 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
     cdef int ii = 0
     cdef int neighboursnum = 0
     cdef float rand_max = 32767 
-    cdef float relinkrandom = 0
     cdef types.Particle *par = NULL
     cdef types.Particle *par2 = NULL
-    cdef float stiffrandom = 0
-    cdef float damprandom = 0
-    cdef float brokrandom = 0
-    cdef float tension = 0
-    cdef float tensionrandom = 0
-    cdef float chancerdom = 0
     cdef types.Particle *fakepar = NULL
     cdef int create_links
     fakepar = <types.Particle *>malloc(1 * cython.sizeof(types.Particle))
     par = &data.parlist[par_id]
+    cdef float friction_1 = 0
+    cdef float friction_1_random = 0
+    cdef float friction_2 = 0
+    cdef float friction_2_random = 0
+    cdef float frictionrandom = 0
+    cdef float tension_1 = 0
+    cdef float tension_1_random = 0
+    cdef float tension_2 = 0
+    cdef float tension_2_random = 0
+    cdef float tensionrandom = 0
+    cdef float link_stiff_1 = 0
+    cdef float stiffrandom_1 = 0
+    cdef float link_estiff_1 = 0
+    cdef float estiffrandom_1 = 0
+    cdef float link_stiff_2 = 0
+    cdef float stiffrandom_2 = 0
+    cdef float link_estiff_2 = 0
+    cdef float estiffrandom_2 = 0
+    cdef float stiffrandom = 0
+    cdef float estiffrandom = 0
+    cdef float damp_1 = 0
+    cdef float damp_1_random = 0
+    cdef float edamp_1 = 0
+    cdef float edamp_1_random = 0
+    cdef float damp_2 = 0
+    cdef float damp_2_random = 0
+    cdef float edamp_2 = 0
+    cdef float edamp_2_random = 0
+    cdef float damprandom = 0
+    cdef float edamprandom = 0
+    cdef float broken_1 = 0
+    cdef float broken_1_random = 0
+    cdef float ebroken_1 = 0
+    cdef float ebroken_1_random = 0
+    cdef float broken_2 = 0
+    cdef float broken_2_random = 0
+    cdef float ebroken_2 = 0
+    cdef float ebroken_2_random = 0
+    cdef float brokrandom = 0
+    cdef float ebrokrandom = 0
+    cdef float chance_1 = 0
+    cdef float chance_1_random = 0
+    cdef float chance_2 = 0
+    cdef float chance_2_random = 0
+    cdef float chancerdom = 0
+    cdef float relinkrandom = 0
 
     if par.state >= 2:
         return
@@ -68,8 +107,22 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                 link.start = par.id
                 link.end = par2.id
 
-                link.friction = (
-                    par.sys.link_friction + par2.sys.link_friction) / 2
+                if par.sys.use_link_friction_tex:
+                    friction_1 = par.sys.link_friction_tex[par.id]
+                    friction_1_random = 0.0
+                else:
+                    friction_1 = par.sys.link_friction
+                    friction_1_random = par.sys.link_frictionrand
+
+                if par2.sys.use_link_friction_tex:
+                    friction_2 = par2.sys.link_friction_tex[par2.id]
+                    friction_2_random = 0.0
+                else:
+                    friction_2 = par2.sys.link_friction
+                    friction_2_random = par2.sys.link_frictionrand
+
+                frictionrandom = friction_1_random + friction_2_random
+                link.friction = ((friction_1 + friction_2) / 2) * ((((rand() / rand_max) * frictionrandom) - (frictionrandom / 2)) + 1)
 
                 if parothers_id == -1 and par.sys.link_group == par2.sys.link_group:
                     if par.sys.id != par2.sys.id:
@@ -81,27 +134,133 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                         create_links = 1
 
                     if create_links == 1:
-                        tensionrandom = (par.sys.link_tensionrand + par2.sys.link_tensionrand) / 2 * 2
-                        srand(1)
-                        tension = ((par.sys.link_tension + par2.sys.link_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
-                        srand(2)
+                        # link tension
+                        if par.sys.use_link_tension_tex:
+                            tension_1 = par.sys.link_tension_tex[par.id]
+                            tension_1_random = 0.0
+                        else:
+                            tension_1 = par.sys.link_tension
+                            tension_1_random = par.sys.link_tensionrand
+
+                        if par2.sys.use_link_tension_tex:
+                            tension_2 = par2.sys.link_tension_tex[par2.id]
+                            tension_2_random = 0.0
+                        else:
+                            tension_2 = par2.sys.link_tension
+                            tension_2_random = par2.sys.link_tensionrand
+
+                        tensionrandom = tension_1_random + tension_2_random
+                        tension = ((tension_1 + tension_2) / 2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
+
+                        # link length
                         link.lenght = ((mol_math.square_dist(par.loc,par2.loc,3))**0.5) * tension
-                        stiffrandom = (par.sys.link_stiffrand + par2.sys.link_stiffrand) / 2 * 2
-                        link.stiffness = ((par.sys.link_stiff + par2.sys.link_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        srand(3)
-                        link.estiffness = ((par.sys.link_estiff + par2.sys.link_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        srand(4)
-                        link.exponent =  abs(int((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2))
+
+                        # link stiffness
+                        if par.sys.use_link_stiff_tex:
+                            link_stiff_1 = par.sys.link_stiff_tex[par.id]
+                            stiffrandom_1 = 0.0
+                        else:
+                            link_stiff_1 = par.sys.link_stiff
+                            stiffrandom_1 = par.sys.link_stiffrand
+
+                        if par.sys.use_link_estiff_tex:
+                            link_estiff_1 = par.sys.link_estiff_tex[par.id]
+                            estiffrandom_1 = 0.0
+                        else:
+                            link_estiff_1 = par.sys.link_estiff
+                            estiffrandom_1 = par.sys.link_estiffrand
+
+                        if par2.sys.use_link_stiff_tex:
+                            link_stiff_2 = par2.sys.link_stiff_tex[par2.id]
+                            stiffrandom_2 = 0.0
+                        else:
+                            link_stiff_2 = par2.sys.link_stiff
+                            stiffrandom_2 = par2.sys.link_stiffrand
+
+                        if par2.sys.use_link_estiff_tex:
+                            link_estiff_2 = par2.sys.link_estiff_tex[par2.id]
+                            estiffrandom_2 = 0.0
+                        else:
+                            link_estiff_2 = par2.sys.link_estiff
+                            estiffrandom_2 = par2.sys.link_estiffrand
+
+                        stiffrandom = stiffrandom_1 + stiffrandom_2
+                        estiffrandom = estiffrandom_1 + estiffrandom_2
+                        link.stiffness = ((link_stiff_1 + link_stiff_2) / 2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.estiffness = ((link_estiff_1 + link_estiff_2) / 2) * ((((rand() / rand_max) * estiffrandom) - (estiffrandom / 2)) + 1)
+
+                        # link exponent
+                        link.exponent = abs(int((par.sys.link_stiffexp + par2.sys.link_stiffexp) / 2))
                         link.eexponent = abs(int((par.sys.link_estiffexp + par2.sys.link_estiffexp) / 2))
-                        damprandom = ((par.sys.link_damprand + par2.sys.link_damprand) / 2) * 2
-                        link.damping = ((par.sys.link_damp + par2.sys.link_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
-                        srand(5)
-                        link.edamping = ((par.sys.link_edamp + par2.sys.link_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
-                        brokrandom = ((par.sys.link_brokenrand + par2.sys.link_brokenrand) / 2) * 2
-                        srand(6)
-                        link.broken = ((par.sys.link_broken + par2.sys.link_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
-                        srand(7)
-                        link.ebroken = ((par.sys.link_ebroken + par2.sys.link_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+
+                        # link damping
+                        if par.sys.use_link_damp_tex:
+                            damp_1 = par.sys.link_damp_tex[par.id]
+                            damp_1_random = 0.0
+                        else:
+                            damp_1 = par.sys.link_damp
+                            damp_1_random = par.sys.link_damprand
+
+                        if par.sys.use_link_edamp_tex:
+                            edamp_1 = par.sys.link_edamp_tex[par.id]
+                            edamp_1_random = 0.0
+                        else:
+                            edamp_1 = par.sys.link_edamp
+                            edamp_1_random = par.sys.link_edamprand
+
+                        if par2.sys.use_link_damp_tex:
+                            damp_2 = par2.sys.link_damp_tex[par2.id]
+                            damp_2_random = 0.0
+                        else:
+                            damp_2 = par2.sys.link_damp
+                            damp_2_random = par2.sys.link_damprand
+
+                        if par2.sys.use_link_edamp_tex:
+                            edamp_2 = par2.sys.link_edamp_tex[par2.id]
+                            edamp_2_random = 0.0
+                        else:
+                            edamp_2 = par2.sys.link_edamp
+                            edamp_2_random = par2.sys.link_edamprand
+
+                        damprandom = damp_1_random + damp_2_random
+                        edamprandom = edamp_1_random + edamp_2_random
+                        link.damping = ((damp_1 + damp_2) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.edamping = ((edamp_1 + edamp_2) / 2) * ((((rand() / rand_max) * edamprandom) - (edamprandom / 2)) + 1)
+
+                        # link broken
+                        if par.sys.use_link_broken_tex:
+                            broken_1 = par.sys.link_broken_tex[par.id]
+                            broken_1_random = 0.0
+                        else:
+                            broken_1 = par.sys.link_broken
+                            broken_1_random = par.sys.link_brokenrand
+
+                        if par.sys.use_link_ebroken_tex:
+                            ebroken_1 = par.sys.link_ebroken_tex[par.id]
+                            ebroken_1_random = 0.0
+                        else:
+                            ebroken_1 = par.sys.link_ebroken
+                            ebroken_1_random = par.sys.link_ebrokenrand
+
+                        if par2.sys.use_link_broken_tex:
+                            broken_2 = par2.sys.link_broken_tex[par2.id]
+                            broken_2_random = 0.0
+                        else:
+                            broken_2 = par2.sys.link_broken
+                            broken_2_random = par2.sys.link_brokenrand
+
+                        if par2.sys.use_link_ebroken_tex:
+                            ebroken_2 = par2.sys.link_ebroken_tex[par2.id]
+                            ebroken_2_random = 0.0
+                        else:
+                            ebroken_2 = par2.sys.link_ebroken
+                            ebroken_2_random = par2.sys.link_ebrokenrand
+
+                        brokrandom = broken_1_random + broken_2_random
+                        ebrokrandom = ebroken_1_random + ebroken_2_random
+                        link.broken = ((broken_1 + broken_2) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = ((ebroken_1 + ebroken_2) / 2) * ((((rand() / rand_max) * ebrokrandom) - (ebrokrandom  / 2)) + 1)
+
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1
@@ -120,32 +279,154 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                         # free(link)
 
                 if parothers_id != -1 and par.sys.relink_group == par2.sys.relink_group:
-                    srand(8)
-                    relinkrandom = (rand() / rand_max)
-                    chancerdom = (par.sys.relink_chancerand + par2.sys.relink_chancerand) / 2 * 2
-                    srand(9)
 
-                    if relinkrandom <= ((par.sys.relink_chance + par2.sys.relink_chance) / 2) * ((((rand() / rand_max) * chancerdom) - (chancerdom / 2)) + 1):
-                        tensionrandom = (par.sys.relink_tensionrand + par2.sys.relink_tensionrand) / 2 * 2
-                        srand(10)
-                        tension = ((par.sys.relink_tension + par2.sys.relink_tension)/2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
-                        srand(11)
-                        link.lenght = ((mol_math.square_dist(par.loc,par2.loc,3))**0.5) * tension
-                        stiffrandom = (par.sys.relink_stiffrand + par2.sys.relink_stiffrand) / 2 * 2
-                        link.stiffness = ((par.sys.relink_stiff + par2.sys.relink_stiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        srand(12)
-                        link.estiffness = ((par.sys.relink_estiff + par2.sys.relink_estiff)/2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
-                        srand(13)
+                    # relink chance
+                    if par.sys.use_relink_chance_tex:
+                        chance_1 = par.sys.relink_chance_tex[par.id]
+                        chance_1_random = 0.0
+                    else:
+                        chance_1 = par.sys.relink_chance
+                        chance_1_random = par.sys.relink_chancerand
+
+                    if par2.sys.use_relink_chance_tex:
+                        chance_2 = par2.sys.relink_chance_tex[par2.id]
+                        chance_2_random = 0.0
+                    else:
+                        chance_2 = par2.sys.relink_chance
+                        chance_2_random = par2.sys.relink_chancerand
+
+                    chancerdom = chance_1_random + chance_2_random
+                    relinkrandom = (rand() / rand_max)
+
+                    if relinkrandom <= ((chance_1 + chance_2) / 2) * ((((rand() / rand_max) * chancerdom) - (chancerdom / 2)) + 1):
+
+                        # relink tension
+                        if par.sys.use_relink_tension_tex:
+                            tension_1 = par.sys.relink_tension_tex[par.id]
+                            tension_1_random = 0.0
+                        else:
+                            tension_1 = par.sys.relink_tension
+                            tension_1_random = par.sys.relink_tensionrand
+
+                        if par2.sys.use_relink_tension_tex:
+                            tension_2 = par2.sys.relink_tension_tex[par2.id]
+                            tension_2_random = 0.0
+                        else:
+                            tension_2 = par2.sys.relink_tension
+                            tension_2_random = par2.sys.relink_tensionrand
+
+                        tensionrandom = tension_1_random + tension_2_random
+                        tension = ((tension_1 + tension_2) / 2) * ((((rand() / rand_max) * tensionrandom) - (tensionrandom / 2)) + 1)
+
+                        # relink length
+                        link.lenght = ((mol_math.square_dist(par.loc, par2.loc, 3)) ** 0.5) * tension
+
+                        # relink stiffness
+                        if par.sys.use_relink_stiff_tex:
+                            stiff_1 = par.sys.relink_stiff_tex[par.id]
+                            stiff_1_random = 0.0
+                        else:
+                            stiff_1 = par.sys.relink_stiff
+                            stiff_1_random = par.sys.relink_stiffrand
+
+                        if par.sys.use_relink_estiff_tex:
+                            estiff_1 = par.sys.relink_estiff_tex[par.id]
+                            estiff_1_random = 0.0
+                        else:
+                            estiff_1 = par.sys.relink_estiff
+                            estiff_1_random = par.sys.relink_estiffrand
+
+                        if par2.sys.use_relink_stiff_tex:
+                            stiff_2 = par2.sys.relink_stiff_tex[par2.id]
+                            stiff_2_random = 0.0
+                        else:
+                            stiff_2 = par2.sys.relink_stiff
+                            stiff_2_random = par2.sys.relink_stiffrand
+
+                        if par2.sys.use_relink_estiff_tex:
+                            estiff_2 = par2.sys.relink_estiff_tex[par2.id]
+                            estiff_2_random = 0.0
+                        else:
+                            estiff_2 = par2.sys.relink_estiff
+                            estiff_2_random = par2.sys.relink_estiffrand
+
+                        stiffrandom = stiff_1_random + stiff_2_random
+                        estiffrandom = estiff_1_random + estiff_2_random
+                        link.stiffness = ((stiff_1 + stiff_2) / 2) * ((((rand() / rand_max) * stiffrandom) - (stiffrandom / 2)) + 1)
+                        link.estiffness = ((estiff_1 + estiff_2) / 2) * ((((rand() / rand_max) * estiffrandom) - (estiffrandom / 2)) + 1)
+
+                        # relink exponent
                         link.exponent = abs(int((par.sys.relink_stiffexp + par2.sys.relink_stiffexp) / 2))
                         link.eexponent = abs(int((par.sys.relink_estiffexp + par2.sys.relink_estiffexp) / 2))
-                        damprandom = ((par.sys.relink_damprand + par2.sys.relink_damprand) / 2) * 2
-                        link.damping = ((par.sys.relink_damp + par2.sys.relink_damp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
-                        srand(14)
-                        link.edamping = ((par.sys.relink_edamp + par2.sys.relink_edamp) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
-                        brokrandom = ((par.sys.relink_brokenrand + par2.sys.relink_brokenrand) / 2) * 2
-                        link.broken = ((par.sys.relink_broken + par2.sys.relink_broken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
-                        srand(15)
-                        link.ebroken = ((par.sys.relink_ebroken + par2.sys.relink_ebroken) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+
+                        # relink damping
+                        if par.sys.use_relink_damp_tex:
+                            damp_1 = par.sys.relink_damp_tex[par.id]
+                            damp_1_random = 0.0
+                        else:
+                            damp_1 = par.sys.relink_damp
+                            damp_1_random = par.sys.relink_damprand
+
+                        if par.sys.use_relink_edamp_tex:
+                            edamp_1 = par.sys.relink_edamp_tex[par.id]
+                            edamp_1_random = 0.0
+                        else:
+                            edamp_1 = par.sys.relink_edamp
+                            edamp_1_random = par.sys.relink_edamprand
+
+                        if par2.sys.use_relink_damp_tex:
+                            damp_2 = par2.sys.relink_damp_tex[par2.id]
+                            damp_2_random = 0.0
+                        else:
+                            damp_2 = par2.sys.relink_damp
+                            damp_2_random = par2.sys.relink_damprand
+
+                        if par2.sys.use_relink_edamp_tex:
+                            edamp_2 = par2.sys.relink_edamp_tex[par2.id]
+                            edamp_2_random = 0.0
+                        else:
+                            edamp_2 = par2.sys.relink_edamp
+                            edamp_2_random = par2.sys.relink_edamprand
+
+                        damprandom = damp_1_random + damp_2_random
+                        edamprandom = edamp_1_random + edamp_2_random
+                        link.damping = ((damp_1 + damp_2) / 2) * ((((rand() / rand_max) * damprandom) - (damprandom / 2)) + 1)
+                        link.edamping = ((edamp_1 + edamp_2) / 2) * ((((rand() / rand_max) * edamprandom) - (edamprandom / 2)) + 1)
+
+                        # relink broken
+                        if par.sys.use_relink_broken_tex:
+                            broken_1 = par.sys.relink_broken_tex[par.id]
+                            broken_1_random = 0.0
+                        else:
+                            broken_1 = par.sys.relink_broken
+                            broken_1_random = par.sys.relink_brokenrand
+
+                        if par.sys.use_relink_ebroken_tex:
+                            ebroken_1 = par.sys.relink_ebroken_tex[par.id]
+                            ebroken_1_random = 0.0
+                        else:
+                            ebroken_1 = par.sys.relink_ebroken
+                            ebroken_1_random = par.sys.relink_ebrokenrand
+
+                        if par2.sys.use_relink_broken_tex:
+                            broken_2 = par2.sys.relink_broken_tex[par2.id]
+                            broken_2_random = 0.0
+                        else:
+                            broken_2 = par2.sys.relink_broken
+                            broken_2_random = par2.sys.relink_brokenrand
+
+                        if par2.sys.use_relink_ebroken_tex:
+                            ebroken_2 = par2.sys.relink_ebroken_tex[par2.id]
+                            ebroken_2_random = 0.0
+                        else:
+                            ebroken_2 = par2.sys.relink_ebroken
+                            ebroken_2_random = par2.sys.relink_ebrokenrand
+
+                        brokrandom = broken_1_random + broken_2_random
+                        ebrokrandom = ebroken_1_random + ebroken_2_random
+                        link.broken = ((broken_1 + broken_2) / 2) * ((((rand() / rand_max) * brokrandom) - (brokrandom  / 2)) + 1)
+                        link.ebroken = ((ebroken_1 + ebroken_2) / 2) * ((((rand() / rand_max) * ebrokrandom) - (ebrokrandom  / 2)) + 1)
+
                         par.links[par.links_num] = link[0]
                         par.links_num += 1
                         par.links_activnum += 1
@@ -158,6 +439,7 @@ cdef void create_link(int par_id, int max_link, int parothers_id=-1)nogil:
                         par2.link_with = <int *>realloc(par2.link_with,(par2.link_withnum + 1) * cython.sizeof(int))
                         data.newlinks += 1
                         # free(link)
+
     # free(neighbours)
     free(fakepar)
     free(link)

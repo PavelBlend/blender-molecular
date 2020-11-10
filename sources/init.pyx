@@ -59,7 +59,7 @@ cpdef init(importdata):
         ######################## TEXTURES VALUES START #########################
         ########################################################################
 
-        index = 47
+        index = 48
         # link tension
         data.psys[i].use_link_tension_tex = importdata[i + 1][6][index + 1]
         if data.psys[i].use_link_tension_tex:
@@ -258,6 +258,7 @@ cpdef init(importdata):
             data.psys[i].link_friction = importdata[i + 1][6][44]
             data.psys[i].link_group = importdata[i + 1][6][45]
             data.psys[i].other_link_active = importdata[i + 1][6][46]
+            data.psys[i].link_frictionrand = importdata[i + 1][6][47]
 
             data.parlist[jj].sys = &data.psys[i]
             data.parlist[jj].collided_with = <int *>malloc(1 * cython.sizeof(int))

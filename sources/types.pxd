@@ -88,6 +88,7 @@ cdef struct ParSys:
     float relink_ebroken
     float relink_ebrokenrand
     float link_friction
+    float link_frictionrand
     int link_group
     int other_link_active
 

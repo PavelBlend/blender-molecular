@@ -32,11 +32,14 @@ def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp
             params[index + 1] = 1
             for clear_index in clear_indexes:
                 params[clear_index] = 0
+            same = getattr(psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name), None)
+            if same:
+                params[index + 2] = params[index]
+                params[index + 3] = 1
             if not etex:
-                if getattr(psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name), None):
-                    params[index + 2] = params[index]
-                    params[index + 3] = 1
-            else:
+                params[index + 2] = params[index]
+                params[index + 3] = 1
+            if etex and not same:
                 params[index + 2] = []
                 for i in range(0, len(par_loc), 3):
                     value = etex.evaluate((
@@ -125,7 +128,7 @@ def pack_data(context, initiate):
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
 
-                    params = [0] * 81
+                    params = [0] * 84
 
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
@@ -179,9 +182,10 @@ def pack_data(context, initiate):
                     params[44] = psys.settings.mol_link_friction
                     params[45] = psys.settings.mol_link_group
                     params[46] = psys.settings.mol_other_link_active
+                    params[47] = psys.settings.mol_link_frictionrand
 
                     # pack textures
-                    index = 47
+                    index = 48
                     pack_tex_data(psys, 'tension', '', index, (9, ), params, par_loc, exp=False)
                     index += 2
                     pack_tex_data(psys, 'stiff', '', index, (11, 18), params, par_loc)
