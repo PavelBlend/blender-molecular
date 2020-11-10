@@ -7,6 +7,8 @@ from .utils import get_object
 
 def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp=True):
     mode = getattr(psys.settings, 'mol_{}link_{}_mode'.format(prefix, name))
+    etex = None
+    params[index] = []
     if mode == 'TEXTURE':
         tex = bpy.data.textures.get(
             getattr(psys.settings, 'mol_{}link_{}tex'.format(prefix, name), None)
@@ -18,7 +20,6 @@ def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp
         else:
             exp = None
         if tex:
-            params[index] = []
             for i in range(0, len(par_loc), 3):
                 value = tex.evaluate((
                     par_loc[i],
@@ -28,21 +29,30 @@ def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp
                 params[index].append(
                     value * getattr(psys.settings, 'mol_{}link_{}tex_coeff'.format(prefix, name))
                 )
+            params[index + 1] = 1
             for clear_index in clear_indexes:
                 params[clear_index] = 0
-            if getattr(psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name)) or not etex:
-                params[index + 1] = params[index]
+            if not etex:
+                if getattr(psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name), None):
+                    params[index + 2] = params[index]
+                    params[index + 3] = 1
             else:
-                params[index + 1] = []
+                params[index + 2] = []
                 for i in range(0, len(par_loc), 3):
                     value = etex.evaluate((
                         par_loc[i],
                         par_loc[i + 1],
                         par_loc[i + 2]
                     ))[-1]
-                    params[index + 1].append(
+                    params[index + 2].append(
                         value * getattr(psys.settings, 'mol_{}link_e{}tex_coeff'.format(prefix, name))
                     )
+                params[index + 3] = 1
+    else:
+        params[index + 1] = 0
+        if exp:
+            params[index + 2] = []
+            params[index + 3] = 0
 
 
 def pack_data(context, initiate):
@@ -115,7 +125,7 @@ def pack_data(context, initiate):
                         psys.settings.mol_relink_ebroken = psys.settings.mol_relink_broken
                         psys.settings.mol_relink_ebrokenrand = psys.settings.mol_relink_brokenrand
 
-                    params = [0] * 60
+                    params = [0] * 81
 
                     params[0] = psys.settings.mol_selfcollision_active
                     params[1] = psys.settings.mol_othercollision_active
@@ -171,19 +181,31 @@ def pack_data(context, initiate):
                     params[46] = psys.settings.mol_other_link_active
 
                     # pack textures
-                    pack_tex_data(psys, 'tension', '', 47, (9, ), params, par_loc, exp=False)
-                    pack_tex_data(psys, 'stiff', '', 49, (11, 18), params, par_loc)
-                    pack_tex_data(psys, 'damp', '', 51, (14, 21), params, par_loc)
-                    pack_tex_data(psys, 'broken', '', 53, (16, 23), params, par_loc)
+                    index = 47
+                    pack_tex_data(psys, 'tension', '', index, (9, ), params, par_loc, exp=False)
+                    index += 2
+                    pack_tex_data(psys, 'stiff', '', index, (11, 18), params, par_loc)
+                    index += 4
+                    pack_tex_data(psys, 'damp', '', index, (14, 21), params, par_loc)
+                    index += 4
+                    pack_tex_data(psys, 'broken', '', index, (16, 23), params, par_loc)
+                    index += 4
 
-                    pack_tex_data(psys, 'tension', 're', 47, (29, ), params, par_loc, exp=False)
-                    pack_tex_data(psys, 'stiff', 're', 49, (32, 39), params, par_loc)
-                    pack_tex_data(psys, 'damp', 're', 51, (34, 41), params, par_loc)
-                    pack_tex_data(psys, 'broken', 're', 53, (36, 43), params, par_loc)
+                    pack_tex_data(psys, 'tension', 're', index, (29, ), params, par_loc, exp=False)
+                    index += 2
+                    pack_tex_data(psys, 'stiff', 're', index, (32, 39), params, par_loc)
+                    index += 4
+                    pack_tex_data(psys, 'damp', 're', index, (34, 41), params, par_loc)
+                    index += 4
+                    pack_tex_data(psys, 'broken', 're', index, (36, 43), params, par_loc)
+                    index += 4
 
-                    pack_tex_data(psys, 'friction', '', 55, (), params, par_loc, exp=False)
-                    pack_tex_data(psys, 'friction', 're', 57, (), params, par_loc, exp=False)
-                    pack_tex_data(psys, 'chance', 're', 59, (), params, par_loc, exp=False)
+                    pack_tex_data(psys, 'friction', '', index, (), params, par_loc, exp=False)
+                    index += 2
+                    pack_tex_data(psys, 'friction', 're', index, (), params, par_loc, exp=False)
+                    index += 2
+                    pack_tex_data(psys, 'chance', 're', index, (), params, par_loc, exp=False)
+                    index += 2
 
                 mol_exportdata = bpy.context.scene.mol_exportdata
 
@@ -199,5 +221,6 @@ def pack_data(context, initiate):
                         par_alive,
                         params
                     ))
+
                 else:
                     mol_exportdata.append((par_loc, par_vel, par_alive))

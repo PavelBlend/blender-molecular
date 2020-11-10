@@ -34,47 +34,48 @@ for root, dirs, files in os.walk('.'):
                     cython_directives={'language_level' : "3"}
                 ))
 
-setup(
-    name='Molecular',
-    cmdclass={'build_ext': build_ext},
-    include_dirs=['.'],
-    ext_modules=ext_modules
-)
+try:
+    setup(
+        name='Molecular',
+        cmdclass={'build_ext': build_ext},
+        include_dirs=['.'],
+        ext_modules=ext_modules
+    )
+finally:
+    for root, dirs, files in os.walk('.'):
+        for file in files:
+            module_name, extension = os.path.splitext(file)
+            module_name = module_name.lower()
+            extension = extension.lower()
+            if not extension in ('.pyx', '.pyd', '.pxd', '.py', '.bat'):
+                os.remove(os.path.join(root, file))
 
-for root, dirs, files in os.walk('.'):
-    for file in files:
-        module_name, extension = os.path.splitext(file)
-        module_name = module_name.lower()
-        extension = extension.lower()
-        if not extension in ('.pyx', '.pyd', '.pxd', '.py', '.bat'):
-            os.remove(os.path.join(root, file))
+    shutil.rmtree('build')
 
-shutil.rmtree('build')
+    addon_path = os.environ.get('BLENDER_USER_ADDON_PATH', None)
+    if addon_path:
+        if addon_path[:-1] == '/':
+            addon_path = addon_path[:-1]
+        if not addon_path.endswith(os.path.join('scripts', 'addons')):
+            raise BaseException('Incorrect addons path')
+    core_folder = os.path.join(addon_path, 'molecular', 'core')
 
-addon_path = os.environ.get('BLENDER_USER_ADDON_PATH', None)
-if addon_path:
-    if addon_path[:-1] == '/':
-        addon_path = addon_path[:-1]
-    if not addon_path.endswith(os.path.join('scripts', 'addons')):
-        raise BaseException('Incorrect addons path')
-core_folder = os.path.join(addon_path, 'molecular', 'core')
-
-for root, dirs, files in os.walk('.'):
-    for file in files:
-        module_name, extension = os.path.splitext(file)
-        module_name = module_name.lower()
-        extension = extension.lower()
-        pyd_file_path = os.path.join(addon_folder, file)
-        if os.path.exists(pyd_file_path):
-            os.remove(pyd_file_path)
-        if extension == '.pyd':
-            if addon_path:
-                print('#', os.path.join(core_folder, file))
-                shutil.copyfile(
+    for root, dirs, files in os.walk('.'):
+        for file in files:
+            module_name, extension = os.path.splitext(file)
+            module_name = module_name.lower()
+            extension = extension.lower()
+            pyd_file_path = os.path.join(addon_folder, file)
+            if os.path.exists(pyd_file_path):
+                os.remove(pyd_file_path)
+            if extension == '.pyd':
+                if addon_path:
+                    print('#', os.path.join(core_folder, file))
+                    shutil.copyfile(
+                        os.path.join(root, file),
+                        os.path.join(core_folder, file)
+                    )
+                os.rename(
                     os.path.join(root, file),
-                    os.path.join(core_folder, file)
+                    pyd_file_path
                 )
-            os.rename(
-                os.path.join(root, file),
-                pyd_file_path
-            )

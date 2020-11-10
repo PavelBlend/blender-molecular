@@ -91,6 +91,55 @@ cdef struct ParSys:
     int link_group
     int other_link_active
 
+    # textures params
+
+    # link tension
+    int use_link_tension_tex
+    float *link_tension_tex
+    # link friction
+    int use_link_friction_tex
+    float *link_friction_tex
+    # link stiffness
+    int use_link_stiff_tex
+    float *link_stiff_tex
+    int use_link_estiff_tex
+    float *link_estiff_tex
+    # link damping
+    int use_link_damp_tex
+    float *link_damp_tex
+    int use_link_edamp_tex
+    float *link_edamp_tex
+    # link broken
+    int use_link_broken_tex
+    float *link_broken_tex
+    int use_link_ebroken_tex
+    float *link_ebroken_tex
+
+    # relink tension
+    int use_relink_tension_tex
+    float *relink_tension_tex
+    # relink friction
+    int use_relink_friction_tex
+    float *relink_friction_tex
+    # relink stiffness
+    int use_relink_stiff_tex
+    float *relink_stiff_tex
+    int use_relink_estiff_tex
+    float *relink_estiff_tex
+    # relink damping
+    int use_relink_damp_tex
+    float *relink_damp_tex
+    int use_relink_edamp_tex
+    float *relink_edamp_tex
+    # relink broken
+    int use_relink_broken_tex
+    float *relink_broken_tex
+    int use_relink_ebroken_tex
+    float *relink_ebroken_tex
+    # relink chance
+    int use_relink_chance_tex
+    float *relink_chance_tex
+
 
 cdef struct SParticle:
     int id
@@ -115,8 +164,6 @@ cdef struct Particle:
     int *neighbours
     int neighboursnum
     int neighboursmax
-    float broken
-    float ebroken
 
 
 cdef struct Pool:

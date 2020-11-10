@@ -9,6 +9,7 @@
 cimport cython
 from cython.parallel import prange
 from libc.stdlib cimport malloc, free
+from libc.stdio cimport printf
 
 cimport data, types, kd_tree, link
 
@@ -45,12 +46,160 @@ cpdef init(importdata):
     data.parlist = <types.Particle *>malloc(data.parnum * cython.sizeof(types.Particle))
     data.parlistcopy = <types.SParticle *>malloc(data.parnum * cython.sizeof(types.SParticle))
     cdef int jj = 0
+    cdef int index = 0
+
     for i in xrange(data.psysnum):
         data.psys[i].id = i
         data.psys[i].parnum = importdata[i + 1][0]
         data.psys[i].particles = <types.Particle *>malloc(data.psys[i].parnum * \
             cython.sizeof(types.Particle))
         data.psys[i].particles = &data.parlist[jj]
+
+        ########################################################################
+        ######################## TEXTURES VALUES START #########################
+        ########################################################################
+
+        index = 47
+        # link tension
+        data.psys[i].use_link_tension_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_tension_tex:
+            data.psys[i].link_tension_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_tension_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link stiffness
+        data.psys[i].use_link_stiff_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_stiff_tex:
+            data.psys[i].link_stiff_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_stiff_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link expansion stiffness
+        data.psys[i].use_link_estiff_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_estiff_tex:
+            data.psys[i].link_estiff_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_estiff_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link damping
+        data.psys[i].use_link_damp_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_damp_tex:
+            data.psys[i].link_damp_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_damp_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link expansion damping
+        data.psys[i].use_link_edamp_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_edamp_tex:
+            data.psys[i].link_edamp_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_edamp_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link broken
+        data.psys[i].use_link_broken_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_broken_tex:
+            data.psys[i].link_broken_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_broken_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link expansion broken
+        data.psys[i].use_link_ebroken_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_ebroken_tex:
+            data.psys[i].link_ebroken_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_ebroken_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink tension
+        data.psys[i].use_relink_tension_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_tension_tex:
+            data.psys[i].relink_tension_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_tension_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink stiffness
+        data.psys[i].use_relink_stiff_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_stiff_tex:
+            data.psys[i].relink_stiff_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_stiff_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink expansion stiffness
+        data.psys[i].use_relink_estiff_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_estiff_tex:
+            data.psys[i].relink_estiff_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_estiff_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink damping
+        data.psys[i].use_relink_damp_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_damp_tex:
+            data.psys[i].relink_damp_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_damp_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink expansion damping
+        data.psys[i].use_relink_edamp_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_edamp_tex:
+            data.psys[i].relink_edamp_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_edamp_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink broken
+        data.psys[i].use_relink_broken_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_broken_tex:
+            data.psys[i].relink_broken_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_broken_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink expansion broken
+        data.psys[i].use_relink_ebroken_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_ebroken_tex:
+            data.psys[i].relink_ebroken_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_ebroken_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # link friction
+        data.psys[i].use_link_friction_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_link_friction_tex:
+            data.psys[i].link_friction_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].link_friction_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink friction
+        data.psys[i].use_relink_friction_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_friction_tex:
+            data.psys[i].relink_friction_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_friction_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        # relink tension
+        data.psys[i].use_relink_chance_tex = importdata[i + 1][6][index + 1]
+        if data.psys[i].use_relink_chance_tex:
+            data.psys[i].relink_chance_tex = <float *>malloc(data.psys[i].parnum * cython.sizeof(float))
+            for ii in xrange(data.psys[i].parnum):
+                data.psys[i].relink_chance_tex[ii] = importdata[i + 1][6][index][ii]
+        index += 2
+
+        ########################################################################
+        ######################### TEXTURES VALUES END ##########################
+        ########################################################################
+
         for ii in xrange(data.psys[i].parnum):
             data.parlist[jj].id = jj
             data.parlist[jj].loc[0] = importdata[i + 1][1][(ii * 3)]
@@ -109,18 +258,6 @@ cpdef init(importdata):
             data.psys[i].link_friction = importdata[i + 1][6][44]
             data.psys[i].link_group = importdata[i + 1][6][45]
             data.psys[i].other_link_active = importdata[i + 1][6][46]
-
-            # broken texture
-            if importdata[i + 1][6][53]:
-                data.parlist[jj].broken = importdata[i + 1][6][53][ii]
-                # ebroken texture
-                if importdata[i + 1][6][54]:
-                    data.parlist[jj].ebroken = importdata[i + 1][6][54][ii]
-                else:
-                    data.parlist[jj].ebroken = data.parlist[jj].broken
-            else:
-                data.parlist[jj].broken = importdata[i + 1][6][15]
-                data.parlist[jj].ebroken = importdata[i + 1][6][22]
 
             data.parlist[jj].sys = &data.psys[i]
             data.parlist[jj].collided_with = <int *>malloc(1 * cython.sizeof(int))
