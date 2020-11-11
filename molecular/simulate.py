@@ -1,14 +1,30 @@
-import math
+import math, struct, os
 
 import bpy
 
 from .utils import get_object
 
 
+def write_debug_data(file_path, data, value_type):
+    bin_data = bytearray()
+    values_count = len(data)
+    bin_data.extend(struct.pack('I', values_count))
+    if value_type == 'FLOAT':
+        value_format = struct.pack('B', 0)
+        bin_data.extend(value_format)
+        for i in range(values_count):
+            value = struct.pack('f', data[i])
+            bin_data.extend(value)
+    with open(file_path, 'wb') as file:
+        file.write(bin_data)
+
+
 def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp=True):
     mode = getattr(psys.settings, 'mol_{}link_{}_mode'.format(prefix, name))
     etex = None
     params[index] = []
+    scene = bpy.context.scene
+    cache_folder = bpy.path.abspath(scene.mol_cache_folder)
     if mode == 'TEXTURE':
         tex = bpy.data.textures.get(
             getattr(psys.settings, 'mol_{}link_{}tex'.format(prefix, name), None)
@@ -29,6 +45,10 @@ def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp
                 params[index].append(
                     value * getattr(psys.settings, 'mol_{}link_{}tex_coeff'.format(prefix, name))
                 )
+            if scene.mol_use_debug_par_attr:
+                cache_file_name = '{}_{}link_{}.bin'.format(psys.name, prefix, name)
+                file_path = os.path.join(cache_folder, cache_file_name)
+                write_debug_data(file_path, params[index], 'FLOAT')
             params[index + 1] = 1
             for clear_index in clear_indexes:
                 params[clear_index] = 0

@@ -474,6 +474,7 @@ class MolecularSimulatePanel(MolecularBasePanel):
 
         box = layout.box()
         box.label(text='General:')
+        draw_prop(box, scn, 'mol_cache_folder', 'Cache Folder')
         draw_prop(box, scn, 'frame_start', 'Start Frame')
         draw_prop(box, scn, 'frame_end', 'End Frame')
 
@@ -656,6 +657,30 @@ class MolecularAboutPanel(MolecularBasePanel):
         row.label(text=names.SITE)
 
 
+class MolecularDebugPanel(MolecularBasePanel):
+    bl_label = 'Degug'
+    bl_idname = "OBJECT_PT_molecular_debug"
+    bl_parent_id = 'OBJECT_PT_molecular'
+
+    def draw(self, context):
+        layout = self.layout
+        scn = bpy.context.scene
+        obj = context.object
+        psys = obj.particle_systems.active
+        if psys is None:
+            return
+        layout.enabled = psys.settings.mol_active
+        # for the data    
+        psys_eval = get_object(context, context.object).particle_systems.active
+
+        draw_prop(
+            layout, scn, 'mol_use_debug_par_attr',
+            'Debug Particles', boolean=True
+        )
+        if scn.mol_use_debug_par_attr:
+            draw_prop(layout, scn, 'mol_debug_par_attr_name', 'Attribute')
+
+
 class MolecularPanel(MolecularBasePanel):
     """Creates a Panel in the Object properties window"""
     bl_label = "Molecular"
@@ -698,5 +723,6 @@ panel_classes = (
         MolecularNewLinksDampingPanel,
         MolecularNewLinksBrokenPanel,
     MolecularToolsPanel,
+    MolecularDebugPanel,
     MolecularAboutPanel
 )

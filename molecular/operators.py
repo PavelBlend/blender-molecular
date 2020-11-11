@@ -1,10 +1,11 @@
+import os
 from time import perf_counter as clock, sleep, strftime, gmtime, time
 
 import bpy
 from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
 
-from . import simulate, core
+from . import simulate, core, cache
 from .utils import get_object, destroy_caches
 
 
@@ -234,7 +235,22 @@ class MolSimulateModal(bpy.types.Operator):
         scene = context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
+        mol_substep = scene.mol_substep
         if event.type == 'ESC' or frame_current == frame_end:
+            for ob in bpy.data.objects:
+                obj = get_object(context, ob)
+                for psys in obj.particle_systems:
+                    if psys.settings.mol_active and len(psys.particles):
+                        par_cache = cache.ParticlesCache()
+                        par_cache.add_attribute(cache.VELOCITY)
+                        framesubstep = frame_current / (mol_substep + 1)  
+                        name = '{}_{:0>6}.bin'.format(psys.name, int(framesubstep))
+                        cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+                        file_path = os.path.join(cache_folder, name)
+                        if not os.path.exists(cache_folder):
+                            os.makedirs(cache_folder)
+                        par_cache.save(psys, file_path)
+
             if scene.mol_bake:
                 fake_context = context.copy()
                 for ob in bpy.data.objects:
@@ -274,6 +290,8 @@ class MolSimulateModal(bpy.types.Operator):
             simulate.pack_data(context, False)
             mol_importdata = core.simulation.simulate(mol_exportdata)
 
+            framesubstep = frame_current / (mol_substep + 1)   
+
             i = 0
             for ob in bpy.data.objects:
                 obj = get_object(context, ob)
@@ -281,10 +299,17 @@ class MolSimulateModal(bpy.types.Operator):
                 for psys in obj.particle_systems:
                     if psys.settings.mol_active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
+                        if framesubstep == int(framesubstep):
+                            par_cache = cache.ParticlesCache()
+                            par_cache.add_attribute(cache.VELOCITY)
+                            name = '{}_{:0>6}.bin'.format(psys.name, int(framesubstep))
+                            cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+                            file_path = os.path.join(cache_folder, name)
+                            if not os.path.exists(cache_folder):
+                                os.makedirs(cache_folder)
+                            par_cache.save(psys, file_path)
                         i += 1
 
-            mol_substep = scene.mol_substep
-            framesubstep = frame_current / (mol_substep + 1)        
             if framesubstep == int(framesubstep):
                 etime = clock()
                 print("    frame " + str(framesubstep + 1) + ":")

@@ -281,3 +281,26 @@ def define_props():
     bpy.types.Scene.mol_objuvbake = bpy.props.StringProperty()
     bpy.types.Scene.mol_psysuvbake = bpy.props.StringProperty()
     bpy.types.Scene.mol_stime = bpy.props.FloatProperty()
+    # debug particle attribute
+    bpy.types.Scene.mol_use_debug_par_attr = bpy.props.BoolProperty(default=False)
+    items = (
+        # link
+        ('LINK_FRICTION', 'Link Friction', ''),
+        ('LINK_TENSION', 'Link Tension', ''),
+        ('LINK_STIFFNESS', 'Link Stiffness', ''),
+        ('LINK_DAMPING', 'Link Damping', ''),
+        ('LINK_BROKEN', 'Link Broken', ''),
+        # relink
+        ('RELINK_FRICTION', 'Relink Friction', ''),
+        ('RELINK_TENSION', 'Relink Tension', ''),
+        ('RELINK_STIFFNESS', 'Relink Stiffness', ''),
+        ('RELINK_DAMPING', 'Relink Damping', ''),
+        ('RELINK_BROKEN', 'Relink Broken', ''),
+        ('RELINK_LINKING', 'Relink Linking', '')
+    )
+    bpy.types.Scene.mol_debug_par_attr_name = bpy.props.EnumProperty(
+        items=items, name='Attribute Name'
+    )
+    bpy.types.Scene.mol_cache_folder = bpy.props.StringProperty(
+        name='Cache Folder', subtype='DIR_PATH'
+    )
