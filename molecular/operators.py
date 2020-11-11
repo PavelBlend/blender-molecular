@@ -53,6 +53,14 @@ class MolSimulate(bpy.types.Operator):
         print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
+
+        cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+        for file in os.listdir(cache_folder):
+            file_path = os.path.join(cache_folder, file)
+            if os.path.isfile(file_path):
+                if file.endswith('.bin'):
+                    os.remove(file_path)
+
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
 
