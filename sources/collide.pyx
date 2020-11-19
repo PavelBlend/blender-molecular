@@ -218,4 +218,4 @@ cdef void collide(types.Particle *par)nogil:
                     if ((par.sys.relink_chance + par2.sys.relink_chance) / 2) \
                             > 0:
 
-                        link.create_link(par.id,par.sys.link_max * 2, par2.id)
+                        link.create_link(par.id, par.sys.link_max * 2, 0, par2.id)

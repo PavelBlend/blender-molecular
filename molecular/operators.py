@@ -34,6 +34,13 @@ class MolSimulate(bpy.types.Operator):
         scene.render.frame_map_new = mol_substep + 1
         scene.frame_end *= mol_substep + 1
 
+        cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+        for file in os.listdir(cache_folder):
+            file_path = os.path.join(cache_folder, file)
+            if os.path.isfile(file_path):
+                if file.endswith('.bin'):
+                    os.remove(file_path)
+
         if scene.mol_timescale_active == True:
             fps = scene.render.fps * scene.timescale
         else:
@@ -42,7 +49,14 @@ class MolSimulate(bpy.types.Operator):
         cpu = scene.mol_cpu
         mol_exportdata = context.scene.mol_exportdata
         mol_exportdata.clear()
-        mol_exportdata.append([fps, mol_substep, 0, 0, cpu])
+        mol_exportdata.append([
+            fps,
+            mol_substep,
+            0,
+            0,
+            cpu,
+            bpy.path.abspath(scene.mol_cache_folder)
+        ])
         mol_stime = clock()
         simulate.pack_data(context, True)
         etime = clock()
@@ -53,13 +67,6 @@ class MolSimulate(bpy.types.Operator):
         print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
         print("  start processing:")
-
-        cache_folder = bpy.path.abspath(scene.mol_cache_folder)
-        for file in os.listdir(cache_folder):
-            file_path = os.path.join(cache_folder, file)
-            if os.path.isfile(file_path):
-                if file.endswith('.bin'):
-                    os.remove(file_path)
 
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}

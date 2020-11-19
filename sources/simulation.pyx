@@ -328,7 +328,7 @@ cdef void update(mol_data):
                         data.psys[i].particles[ii].loc,
                         data.psys[i].particles[ii].sys.link_length
                     )
-                    link.create_link(data.psys[i].particles[ii].id, data.psys[i].link_max)
+                    link.create_link(data.psys[i].particles[ii].id, data.psys[i].link_max, 0)
                     # free(data.psys[i].particles[ii].neighbours)
                     data.psys[i].particles[ii].neighboursnum = 0
 

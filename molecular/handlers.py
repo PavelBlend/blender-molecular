@@ -11,13 +11,13 @@ def get_debug_values(debug_file_path):
     with open(debug_file_path, 'rb') as file:
         data = bytearray(file.read())
     p = 0
-    values_count = struct.unpack('I', data[p : p + 4])[0]
+    values_count = struct.unpack('<I', data[p : p + 4])[0]
     p += 4
-    value_format = struct.unpack('B', data[p : p + 1])[0]
+    value_format = struct.unpack('<B', data[p : p + 1])[0]
     p += 1
     values = [None, ] * values_count * 3
     if value_format == 0:
-        format_string = 'f'
+        format_string = '<f'
         format_size = 4
         for i in range(0, values_count * 3, 3):
             value = struct.unpack(format_string, data[p : p + format_size])[0]
@@ -56,22 +56,34 @@ def frame_change_pre_handler(scene):
                         elif attr_name == 'LINK_TENSION':
                             attr = 'link_tension'
                         elif attr_name == 'LINK_STIFFNESS':
-                            attr = 'link_stiff'
+                            attr = 'link_stiffness'
+                        elif attr_name == 'LINK_ESTIFFNESS':
+                            attr = 'link_estiffness'
                         elif attr_name == 'LINK_DAMPING':
-                            attr = 'link_damp'
+                            attr = 'link_damping'
+                        elif attr_name == 'LINK_EDAMPING':
+                            attr = 'link_edamping'
                         elif attr_name == 'LINK_BROKEN':
                             attr = 'link_broken'
+                        elif attr_name == 'LINK_EBROKEN':
+                            attr = 'link_ebroken'
                         # relink
                         if attr_name == 'RELINK_FRICTION':
                             attr = 'relink_friction'
                         elif attr_name == 'RELINK_TENSION':
                             attr = 'relink_tension'
                         elif attr_name == 'RELINK_STIFFNESS':
-                            attr = 'relink_stiff'
+                            attr = 'relink_stiffness'
+                        elif attr_name == 'RELINK_ESTIFFNESS':
+                            attr = 'relink_estiffness'
                         elif attr_name == 'RELINK_DAMPING':
-                            attr = 'relink_damp'
+                            attr = 'relink_damping'
+                        elif attr_name == 'RELINK_EDAMPING':
+                            attr = 'relink_edamping'
                         elif attr_name == 'RELINK_BROKEN':
                             attr = 'relink_broken'
+                        elif attr_name == 'RELINK_EBROKEN':
+                            attr = 'relink_ebroken'
                         elif attr_name == 'RELINK_LINKING':
                             attr = 'relink_chance'
 

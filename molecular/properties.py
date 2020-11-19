@@ -287,15 +287,21 @@ def define_props():
         # link
         ('LINK_FRICTION', 'Link Friction', ''),
         ('LINK_TENSION', 'Link Tension', ''),
-        ('LINK_STIFFNESS', 'Link Stiffness', ''),
-        ('LINK_DAMPING', 'Link Damping', ''),
-        ('LINK_BROKEN', 'Link Broken', ''),
+        ('LINK_STIFFNESS', 'Link C-Stiffness', ''),
+        ('LINK_ESTIFFNESS', 'Link E-Stiffness', ''),
+        ('LINK_DAMPING', 'Link C-Damping', ''),
+        ('LINK_EDAMPING', 'Link E-Damping', ''),
+        ('LINK_BROKEN', 'Link C-Broken', ''),
+        ('LINK_EBROKEN', 'Link E-Broken', ''),
         # relink
         ('RELINK_FRICTION', 'Relink Friction', ''),
         ('RELINK_TENSION', 'Relink Tension', ''),
-        ('RELINK_STIFFNESS', 'Relink Stiffness', ''),
-        ('RELINK_DAMPING', 'Relink Damping', ''),
-        ('RELINK_BROKEN', 'Relink Broken', ''),
+        ('RELINK_STIFFNESS', 'Relink C-Stiffness', ''),
+        ('RELINK_ESTIFFNESS', 'Relink E-Stiffness', ''),
+        ('RELINK_DAMPING', 'Relink C-Damping', ''),
+        ('RELINK_EDAMPING', 'Relink E-Damping', ''),
+        ('RELINK_BROKEN', 'Relink C-Broken', ''),
+        ('RELINK_EBROKEN', 'Relink E-Broken', ''),
         ('RELINK_LINKING', 'Relink Linking', '')
     )
     bpy.types.Scene.mol_debug_par_attr_name = bpy.props.EnumProperty(

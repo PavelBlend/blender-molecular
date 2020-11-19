@@ -9,9 +9,10 @@
 cimport cython
 from cython.parallel import prange
 from libc.stdlib cimport malloc, free
-from libc.stdio cimport printf
+from libc.stdio cimport printf, fwrite
+from libc.string cimport memcpy, memset
 
-cimport data, types, kd_tree, link
+cimport data, types, kd_tree, link, debug
 
 
 cdef extern from "stdlib.h":
@@ -25,6 +26,13 @@ cdef extern from "stdlib.h":
 
 
 print("cmolcore imported with success! v1.12")
+
+
+cdef void from_str_to_char_array(source, char *dest):
+    cdef size_t source_len = len(source) 
+    cdef bytes as_bytes = source.encode('ascii')
+    cdef const char *as_ptr = <const char *>(as_bytes)
+    memcpy(dest, as_ptr, source_len)
 
 
 cpdef init(importdata):
@@ -47,13 +55,46 @@ cpdef init(importdata):
     data.parlistcopy = <types.SParticle *>malloc(data.parnum * cython.sizeof(types.SParticle))
     cdef int jj = 0
     cdef int index = 0
+    cdef char cache_folder[256]
+    cdef int fmt = 0
 
     for i in xrange(data.psysnum):
+        memset(cache_folder, 0, 256)
+        from_str_to_char_array(importdata[0][5] + importdata[i + 1][7], cache_folder)
+        debug.open_debug_files(cache_folder)
+
         data.psys[i].id = i
         data.psys[i].parnum = importdata[i + 1][0]
         data.psys[i].particles = <types.Particle *>malloc(data.psys[i].parnum * \
             cython.sizeof(types.Particle))
         data.psys[i].particles = &data.parlist[jj]
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_friction_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_friction_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_tension_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_tension_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_stiffness_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_stiffness_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_estiffness_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_estiffness_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_damping_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_damping_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_edamping_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_edamping_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_broken_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_broken_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_ebroken_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_ebroken_file)
+
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_chance_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.link_chance_file)
 
         ########################################################################
         ######################## TEXTURES VALUES START #########################
@@ -327,10 +368,11 @@ cpdef init(importdata):
                 )
 
     for i in xrange(data.parnum):
-        link.create_link(data.parlist[i].id, data.parlist[i].sys.link_max)
+        link.create_link(data.parlist[i].id, data.parlist[i].sys.link_max, 1)
         if data.parlist[i].neighboursnum > 1:
             # free(data.parlist[i].neighbours)
             data.parlist[i].neighboursnum = 0
+    debug.close_debug_files()
     data.totallinks += data.newlinks
     print("  New links created: ", data.newlinks)
     return data.parnum
