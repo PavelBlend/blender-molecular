@@ -37,19 +37,19 @@ def frame_change_pre_handler(scene):
         obj = utils.get_object(bpy.context, ob)
         for psys in obj.particle_systems:
             if psys.settings.mol_active:
-                cache_file_name = '{}_{:0>6}.bin'.format(psys.name, scene.frame_current)
+                cache_file_name = '{}_{:0>6}.bin'.format(psys.settings.name, scene.frame_current)
                 file_path = os.path.join(cache_folder, cache_file_name)
                 par_cache = cache.ParticlesCache()
                 if os.path.exists(file_path) and os.path.isfile(file_path):
                     par_attrs = par_cache.read(file_path)
                     loc = par_attrs[cache.LOCATION]
                     psys.particles.foreach_set('location', loc)
-                    if not scene.mol_use_debug_par_attr:
+                    if not psys.settings.mol_use_debug_par_attr:
                         vel = par_attrs.get(cache.VELOCITY, None)
                         if vel:
                             psys.particles.foreach_set('velocity', vel)
                     else:
-                        attr_name = scene.mol_debug_par_attr_name
+                        attr_name = psys.settings.mol_debug_par_attr_name
                         # link
                         if attr_name == 'LINK_FRICTION':
                             attr = 'link_friction'
@@ -87,7 +87,7 @@ def frame_change_pre_handler(scene):
                         elif attr_name == 'RELINK_LINKING':
                             attr = 'relink_chance'
 
-                        debug_file_name = '{}_{}.bin'.format(psys.name, attr)
+                        debug_file_name = '{}_{}.bin'.format(psys.settings.name, attr)
                         debug_file_path = os.path.join(cache_folder, debug_file_name)
                         values = get_debug_values(debug_file_path)
                         if values:

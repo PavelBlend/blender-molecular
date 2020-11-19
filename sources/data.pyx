@@ -15,3 +15,4 @@ cdef types.Particle *parlist = NULL
 cdef types.SParticle *parlistcopy = NULL
 cdef types.ParSys *psys = NULL
 cdef types.KDTree *kdtree = NULL
+cdef int *par_id_list = NULL

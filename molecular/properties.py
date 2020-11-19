@@ -238,6 +238,32 @@ def define_props():
         description=descriptions.BAKE_UV,
         default=False
     )
+    # debug particle attribute
+    parset.mol_use_debug_par_attr = bpy.props.BoolProperty(default=False)
+    items = (
+        # link
+        ('LINK_FRICTION', 'Link Friction', ''),
+        ('LINK_TENSION', 'Link Tension', ''),
+        ('LINK_STIFFNESS', 'Link C-Stiffness', ''),
+        ('LINK_ESTIFFNESS', 'Link E-Stiffness', ''),
+        ('LINK_DAMPING', 'Link C-Damping', ''),
+        ('LINK_EDAMPING', 'Link E-Damping', ''),
+        ('LINK_BROKEN', 'Link C-Broken', ''),
+        ('LINK_EBROKEN', 'Link E-Broken', ''),
+        # relink
+        ('RELINK_FRICTION', 'Relink Friction', ''),
+        ('RELINK_TENSION', 'Relink Tension', ''),
+        ('RELINK_STIFFNESS', 'Relink C-Stiffness', ''),
+        ('RELINK_ESTIFFNESS', 'Relink E-Stiffness', ''),
+        ('RELINK_DAMPING', 'Relink C-Damping', ''),
+        ('RELINK_EDAMPING', 'Relink E-Damping', ''),
+        ('RELINK_BROKEN', 'Relink C-Broken', ''),
+        ('RELINK_EBROKEN', 'Relink E-Broken', ''),
+        ('RELINK_LINKING', 'Relink Linking', '')
+    )
+    parset.mol_debug_par_attr_name = bpy.props.EnumProperty(
+        items=items, name='Attribute Name'
+    )
     bpy.types.Scene.mol_timescale_active = bpy.props.BoolProperty(
         name="mol_timescale_active",
         description=descriptions.TIME_SCALE_ACTIVE,
@@ -281,32 +307,6 @@ def define_props():
     bpy.types.Scene.mol_objuvbake = bpy.props.StringProperty()
     bpy.types.Scene.mol_psysuvbake = bpy.props.StringProperty()
     bpy.types.Scene.mol_stime = bpy.props.FloatProperty()
-    # debug particle attribute
-    bpy.types.Scene.mol_use_debug_par_attr = bpy.props.BoolProperty(default=False)
-    items = (
-        # link
-        ('LINK_FRICTION', 'Link Friction', ''),
-        ('LINK_TENSION', 'Link Tension', ''),
-        ('LINK_STIFFNESS', 'Link C-Stiffness', ''),
-        ('LINK_ESTIFFNESS', 'Link E-Stiffness', ''),
-        ('LINK_DAMPING', 'Link C-Damping', ''),
-        ('LINK_EDAMPING', 'Link E-Damping', ''),
-        ('LINK_BROKEN', 'Link C-Broken', ''),
-        ('LINK_EBROKEN', 'Link E-Broken', ''),
-        # relink
-        ('RELINK_FRICTION', 'Relink Friction', ''),
-        ('RELINK_TENSION', 'Relink Tension', ''),
-        ('RELINK_STIFFNESS', 'Relink C-Stiffness', ''),
-        ('RELINK_ESTIFFNESS', 'Relink E-Stiffness', ''),
-        ('RELINK_DAMPING', 'Relink C-Damping', ''),
-        ('RELINK_EDAMPING', 'Relink E-Damping', ''),
-        ('RELINK_BROKEN', 'Relink C-Broken', ''),
-        ('RELINK_EBROKEN', 'Relink E-Broken', ''),
-        ('RELINK_LINKING', 'Relink Linking', '')
-    )
-    bpy.types.Scene.mol_debug_par_attr_name = bpy.props.EnumProperty(
-        items=items, name='Attribute Name'
-    )
     bpy.types.Scene.mol_cache_folder = bpy.props.StringProperty(
         name='Cache Folder', subtype='DIR_PATH'
     )

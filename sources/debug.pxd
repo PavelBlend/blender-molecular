@@ -4,15 +4,18 @@ from libc.stdio cimport FILE
 
 
 # debug files
-cdef FILE *link_friction_file
-cdef FILE *link_tension_file
-cdef FILE *link_stiffness_file
-cdef FILE *link_estiffness_file
-cdef FILE *link_damping_file
-cdef FILE *link_edamping_file
-cdef FILE *link_broken_file
-cdef FILE *link_ebroken_file
-cdef FILE *link_chance_file
+cdef struct DebugFiles:
+    FILE *link_friction_file
+    FILE *link_tension_file
+    FILE *link_stiffness_file
+    FILE *link_estiffness_file
+    FILE *link_damping_file
+    FILE *link_edamping_file
+    FILE *link_broken_file
+    FILE *link_ebroken_file
+    FILE *link_chance_file
 
-cdef void open_debug_files(char *path)nogil
-cdef void close_debug_files()nogil
+
+cdef DebugFiles *debug_files
+cdef void open_debug_files(char *path, int psys_id)nogil
+cdef void close_debug_files(int psys_id)nogil

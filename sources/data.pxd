@@ -15,3 +15,4 @@ cdef types.Particle *parlist
 cdef types.SParticle *parlistcopy
 cdef types.ParSys *psys
 cdef types.KDTree *kdtree
+cdef int *par_id_list

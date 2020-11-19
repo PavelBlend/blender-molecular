@@ -45,10 +45,6 @@ def pack_tex_data(psys, name, prefix, index, clear_indexes, params, par_loc, exp
                 params[index].append(
                     value * getattr(psys.settings, 'mol_{}link_{}tex_coeff'.format(prefix, name))
                 )
-            if scene.mol_use_debug_par_attr:
-                cache_file_name = '{}_{}link_{}.bin'.format(psys.name, prefix, name)
-                file_path = os.path.join(cache_folder, cache_file_name)
-                write_debug_data(file_path, params[index], 'FLOAT')
             params[index + 1] = 1
             for clear_index in clear_indexes:
                 params[clear_index] = 0
@@ -280,7 +276,7 @@ def pack_data(context, initiate):
                         par_mass,
                         par_alive,
                         params,
-                        psys.name + '_'
+                        psys.settings.name + '_'
                     ))
 
                 else:

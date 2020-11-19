@@ -52,16 +52,18 @@ cpdef init(importdata):
     print("  Number of cpu's used:", data.cpunum)
     data.psys = <types.ParSys *>malloc(data.psysnum * cython.sizeof(types.ParSys))
     data.parlist = <types.Particle *>malloc(data.parnum * cython.sizeof(types.Particle))
+    data.par_id_list = <int *>malloc(data.parnum * cython.sizeof(int))
     data.parlistcopy = <types.SParticle *>malloc(data.parnum * cython.sizeof(types.SParticle))
     cdef int jj = 0
     cdef int index = 0
     cdef char cache_folder[256]
     cdef int fmt = 0
+    debug.debug_files = <debug.DebugFiles *>malloc(data.psysnum * cython.sizeof(debug.DebugFiles))
 
     for i in xrange(data.psysnum):
         memset(cache_folder, 0, 256)
         from_str_to_char_array(importdata[0][5] + importdata[i + 1][7], cache_folder)
-        debug.open_debug_files(cache_folder)
+        debug.open_debug_files(cache_folder, i)
 
         data.psys[i].id = i
         data.psys[i].parnum = importdata[i + 1][0]
@@ -69,32 +71,32 @@ cpdef init(importdata):
             cython.sizeof(types.Particle))
         data.psys[i].particles = &data.parlist[jj]
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_friction_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_friction_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_friction_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_friction_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_tension_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_tension_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_tension_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_tension_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_stiffness_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_stiffness_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_stiffness_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_stiffness_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_estiffness_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_estiffness_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_estiffness_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_estiffness_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_damping_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_damping_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_damping_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_damping_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_edamping_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_edamping_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_edamping_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_edamping_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_broken_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_broken_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_broken_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_broken_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_ebroken_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_ebroken_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_ebroken_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_ebroken_file)
 
-        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.link_chance_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug.link_chance_file)
+        fwrite(&data.psys[i].parnum, cython.sizeof(int), 1, debug.debug_files[i].link_chance_file)
+        fwrite(&fmt, cython.sizeof(char), 1, debug.debug_files[i].link_chance_file)
 
         ########################################################################
         ######################## TEXTURES VALUES START #########################
@@ -292,6 +294,7 @@ cpdef init(importdata):
 
         for ii in xrange(data.psys[i].parnum):
             data.parlist[jj].id = jj
+            data.par_id_list[jj] = ii
             data.parlist[jj].loc[0] = importdata[i + 1][1][(ii * 3)]
             data.parlist[jj].loc[1] = importdata[i + 1][1][(ii * 3) + 1]
             data.parlist[jj].loc[2] = importdata[i + 1][1][(ii * 3) + 2]
@@ -372,7 +375,8 @@ cpdef init(importdata):
         if data.parlist[i].neighboursnum > 1:
             # free(data.parlist[i].neighbours)
             data.parlist[i].neighboursnum = 0
-    debug.close_debug_files()
+
+    debug.close_debug_files(data.psysnum)
     data.totallinks += data.newlinks
     print("  New links created: ", data.newlinks)
     return data.parnum

@@ -674,11 +674,11 @@ class MolecularDebugPanel(MolecularBasePanel):
         psys_eval = get_object(context, context.object).particle_systems.active
 
         draw_prop(
-            layout, scn, 'mol_use_debug_par_attr',
+            layout, psys.settings, 'mol_use_debug_par_attr',
             'Debug Particles', boolean=True
         )
-        if scn.mol_use_debug_par_attr:
-            draw_prop(layout, scn, 'mol_debug_par_attr_name', 'Attribute')
+        if psys.settings.mol_use_debug_par_attr:
+            draw_prop(layout, psys.settings, 'mol_debug_par_attr_name', 'Attribute')
 
 
 class MolecularPanel(MolecularBasePanel):
