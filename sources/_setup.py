@@ -70,7 +70,6 @@ finally:
                 os.remove(pyd_file_path)
             if extension == '.pyd':
                 if addon_path:
-                    print('#', os.path.join(core_folder, file))
                     shutil.copyfile(
                         os.path.join(root, file),
                         os.path.join(core_folder, file)
