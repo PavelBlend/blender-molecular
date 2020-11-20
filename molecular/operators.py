@@ -366,4 +366,39 @@ class MolSimulateModal(bpy.types.Operator):
 
     def cancel(self, context):
         context.window_manager.event_timer_remove(self._timer)
-        return {'CANCELLED'}   
+        return {'CANCELLED'}
+
+
+class MolBakeModal(bpy.types.Operator):
+    bl_idname = "wm.mol_bake_modal"
+    bl_label = "Bake Molecular"
+    _timer = None
+
+    def modal(self, context, event):
+        scene = context.scene
+        frame_end = scene.frame_end
+        frame_current = scene.frame_current
+        if event.type == 'ESC' or frame_current == frame_end:
+            if scene.mol_bake:
+                fake_context = context.copy()
+                for ob in bpy.data.objects:
+                    obj = get_object(context, ob)
+                    for psys in obj.particle_systems:
+                        if psys.settings.mol_active and len(psys.particles):
+                            fake_context["point_cache"] = psys.point_cache
+                            bpy.ops.ptcache.bake_from_cache(fake_context)
+            context.view_layer.update()
+            scene.frame_set(frame=scene.frame_start)
+            return self.cancel(context)
+        if event.type == 'TIMER':
+            scene.frame_set(frame=frame_current + 1)
+        return {'PASS_THROUGH'}
+
+    def execute(self, context):
+        self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
+        context.window_manager.modal_handler_add(self)
+        return {'RUNNING_MODAL'}
+
+    def cancel(self, context):
+        context.window_manager.event_timer_remove(self._timer)
+        return {'CANCELLED'}

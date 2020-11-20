@@ -46,6 +46,7 @@ def register():
     bpy.utils.register_class(operators.MolSimulate)
     bpy.utils.register_class(operators.MolSetGlobalUV)
     bpy.utils.register_class(operators.MolSetActiveUV)
+    bpy.utils.register_class(operators.MolBakeModal)
     for panel in ui.panel_classes:
         bpy.utils.register_class(panel)
     handlers.register()
@@ -58,6 +59,7 @@ def unregister():
     from . import properties, ui, operators
 
     handlers.unregister()
+    bpy.utils.unregister_class(operators.MolBakeModal)
     bpy.utils.unregister_class(operators.MolSimulateModal)
     bpy.utils.unregister_class(operators.MolSimulate)
     bpy.utils.unregister_class(operators.MolSetGlobalUV)

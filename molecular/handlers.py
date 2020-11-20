@@ -5,6 +5,14 @@ import bpy
 from . import utils, cache
 
 
+mol_psys = []
+mol_objs = []
+mol_mods = []
+mol_psys_rend = []
+mol_mods_rend = []
+is_rendering = False
+
+
 def get_debug_values(debug_file_path):
     if not os.path.exists(debug_file_path) or not os.path.isfile(debug_file_path):
         return
@@ -28,8 +36,21 @@ def get_debug_values(debug_file_path):
     return values
 
 
+def get_par_attrs(psys, scene, cache_folder):
+    par_attrs = None
+    cache_file_name = '{}_{:0>6}.bin'.format(psys.settings.name, scene.frame_current)
+    file_path = os.path.join(cache_folder, cache_file_name)
+    par_cache = cache.ParticlesCache()
+    if os.path.exists(file_path) and os.path.isfile(file_path):
+        par_attrs = par_cache.read(file_path)
+    return par_attrs
+
+
 @bpy.app.handlers.persistent
 def frame_change_pre_handler(scene):
+    global is_rendering
+    if is_rendering:
+        return
     if scene.mol_simrun:
         return
     cache_folder = bpy.path.abspath(scene.mol_cache_folder)
@@ -37,11 +58,10 @@ def frame_change_pre_handler(scene):
         obj = utils.get_object(bpy.context, ob)
         for psys in obj.particle_systems:
             if psys.settings.mol_active:
-                cache_file_name = '{}_{:0>6}.bin'.format(psys.settings.name, scene.frame_current)
-                file_path = os.path.join(cache_folder, cache_file_name)
-                par_cache = cache.ParticlesCache()
-                if os.path.exists(file_path) and os.path.isfile(file_path):
-                    par_attrs = par_cache.read(file_path)
+                if psys.point_cache.is_baked:
+                    continue
+                par_attrs = get_par_attrs(psys, scene, cache_folder)
+                if par_attrs:
                     loc = par_attrs[cache.LOCATION]
                     psys.particles.foreach_set('location', loc)
                     if not psys.settings.mol_use_debug_par_attr:

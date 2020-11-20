@@ -539,6 +539,8 @@ class MolecularSimulatePanel(MolecularBasePanel):
             row.enabled = False
             row.operator("ptcache.free_bake_all", text="Free All Bakes")
 
+        box.operator("wm.mol_bake_modal", text="Bake")
+
 
 class MolecularToolsPanel(MolecularBasePanel):
     bl_label = names.MOLECULAR_TOOLS
