@@ -9,6 +9,9 @@ from . import simulate, core, cache
 from .utils import get_object, destroy_caches
 
 
+baking = False
+
+
 class MolSimulate(bpy.types.Operator):
     bl_idname = "object.mol_simulate"
     bl_label = 'Simulate'
@@ -35,6 +38,8 @@ class MolSimulate(bpy.types.Operator):
         scene.frame_end *= mol_substep + 1
 
         cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+        if not os.path.exists(cache_folder):
+            os.makedirs(cache_folder)
         for file in os.listdir(cache_folder):
             file_path = os.path.join(cache_folder, file)
             if os.path.isfile(file_path):
@@ -103,8 +108,9 @@ class MolSetActiveUV(bpy.types.Operator):
 
         scene.mol_objuvbake = obj.name
         scene.mol_psysuvbake = obj.particle_systems.active.name
+        psys = obj.particle_systems[scene.mol_psysuvbake]
 
-        if not obj.data.uv_layers.active:
+        if not obj.data.uv_layers.get(psys.settings.mol_uv_name):
             return {'FINISHED'}
 
         print('  start bake uv from:', obj.name)
@@ -123,8 +129,7 @@ class MolSetActiveUV(bpy.types.Operator):
         bpy.ops.object.modifier_apply(ctx, modifier=mod.name)
 
         context.view_layer.update()
-            
-        psys = obj.particle_systems[scene.mol_psysuvbake]
+
         par_uv = []
         me = obj2.data
 
@@ -144,9 +149,9 @@ class MolSetActiveUV(bpy.types.Operator):
             uvindex1 = me.polygons[point[3]].loop_start + 0
             uvindex2 = me.polygons[point[3]].loop_start + 1
             uvindex3 = me.polygons[point[3]].loop_start + 2
-            uv1 = me.uv_layers.active.data[uvindex1].uv.to_3d()
-            uv2 = me.uv_layers.active.data[uvindex2].uv.to_3d()
-            uv3 = me.uv_layers.active.data[uvindex3].uv.to_3d()
+            uv1 = me.uv_layers[psys.settings.mol_uv_name].data[uvindex1].uv.to_3d()
+            uv2 = me.uv_layers[psys.settings.mol_uv_name].data[uvindex2].uv.to_3d()
+            uv3 = me.uv_layers[psys.settings.mol_uv_name].data[uvindex3].uv.to_3d()
 
             p = obj2.matrix_world @ point[1]
 
@@ -266,14 +271,6 @@ class MolSimulateModal(bpy.types.Operator):
                             os.makedirs(cache_folder)
                         par_cache.save(psys, file_path)
 
-            if scene.mol_bake:
-                fake_context = context.copy()
-                for ob in bpy.data.objects:
-                    obj = get_object(context, ob)
-                    for psys in obj.particle_systems:
-                        if psys.settings.mol_active and len(psys.particles):
-                            fake_context["point_cache"] = psys.point_cache
-                            bpy.ops.ptcache.bake_from_cache(fake_context)
             scene.render.frame_map_new = 1
             scene.frame_end = scene.mol_old_endframe
             context.view_layer.update()
@@ -379,14 +376,13 @@ class MolBakeModal(bpy.types.Operator):
         frame_end = scene.frame_end
         frame_current = scene.frame_current
         if event.type == 'ESC' or frame_current == frame_end:
-            if scene.mol_bake:
-                fake_context = context.copy()
-                for ob in bpy.data.objects:
-                    obj = get_object(context, ob)
-                    for psys in obj.particle_systems:
-                        if psys.settings.mol_active and len(psys.particles):
-                            fake_context["point_cache"] = psys.point_cache
-                            bpy.ops.ptcache.bake_from_cache(fake_context)
+            fake_context = context.copy()
+            for ob in bpy.data.objects:
+                obj = get_object(context, ob)
+                for psys in obj.particle_systems:
+                    if psys.settings.mol_active and len(psys.particles):
+                        fake_context["point_cache"] = psys.point_cache
+                        bpy.ops.ptcache.bake_from_cache(fake_context)
             context.view_layer.update()
             scene.frame_set(frame=scene.frame_start)
             return self.cancel(context)
@@ -395,10 +391,16 @@ class MolBakeModal(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
+        global baking
+        baking = True
+        scene = context.scene
+        scene.frame_set(frame=scene.frame_start)
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
 
     def cancel(self, context):
+        global baking
+        baking = False
         context.window_manager.event_timer_remove(self._timer)
         return {'CANCELLED'}

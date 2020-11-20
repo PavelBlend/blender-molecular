@@ -238,6 +238,7 @@ def define_props():
         description=descriptions.BAKE_UV,
         default=False
     )
+    parset.mol_uv_name = bpy.props.StringProperty(name='UV Name')
     # debug particle attribute
     parset.mol_use_debug_par_attr = bpy.props.BoolProperty(default=False)
     items = (
@@ -278,11 +279,6 @@ def define_props():
         name="Substeps",
         description=descriptions.SUBSTEP,
         min=0, max=900, default=4
-    )
-    bpy.types.Scene.mol_bake = bpy.props.BoolProperty(
-        name="Bake All",
-        description=descriptions.BAKE,
-        default=True
     )
     bpy.types.Scene.mol_render = bpy.props.BoolProperty(
         name="Render",

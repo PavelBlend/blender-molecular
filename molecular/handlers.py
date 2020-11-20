@@ -2,14 +2,9 @@ import os, struct
 
 import bpy
 
-from . import utils, cache
+from . import utils, cache, operators
 
 
-mol_psys = []
-mol_objs = []
-mol_mods = []
-mol_psys_rend = []
-mol_mods_rend = []
 is_rendering = False
 
 
@@ -31,8 +26,8 @@ def get_debug_values(debug_file_path):
             value = struct.unpack(format_string, data[p : p + format_size])[0]
             p += format_size
             values[i] = value
-            values[i + 1] = value
-            values[i + 2] = value
+            values[i + 1] = 0.0
+            values[i + 2] = 0.0
     return values
 
 
@@ -47,6 +42,18 @@ def get_par_attrs(psys, scene, cache_folder):
 
 
 @bpy.app.handlers.persistent
+def render_post_handler(scene):
+    global is_rendering
+    is_rendering = False
+
+
+@bpy.app.handlers.persistent
+def render_init_handler(scene):
+    global is_rendering
+    is_rendering = True
+
+
+@bpy.app.handlers.persistent
 def frame_change_pre_handler(scene):
     global is_rendering
     if is_rendering:
@@ -58,7 +65,7 @@ def frame_change_pre_handler(scene):
         obj = utils.get_object(bpy.context, ob)
         for psys in obj.particle_systems:
             if psys.settings.mol_active:
-                if psys.point_cache.is_baked:
+                if psys.point_cache.is_baked and operators.baking:
                     continue
                 par_attrs = get_par_attrs(psys, scene, cache_folder)
                 if par_attrs:
@@ -123,7 +130,11 @@ def frame_change_pre_handler(scene):
 
 def register():
     bpy.app.handlers.frame_change_post.append(frame_change_pre_handler)
+    bpy.app.handlers.render_init.append(render_init_handler)
+    bpy.app.handlers.render_post.append(render_post_handler)
 
 
 def unregister():
+    bpy.app.handlers.render_init.remove(render_init_handler)
+    bpy.app.handlers.render_post.remove(render_post_handler)
     bpy.app.handlers.frame_change_post.remove(frame_change_pre_handler)

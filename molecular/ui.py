@@ -489,57 +489,56 @@ class MolecularSimulatePanel(MolecularBasePanel):
 
         box = layout.box()
         box.label(text='Actions at Ending:')
-        draw_prop(box, scn, 'mol_bake', 'Bake', boolean=True)
         draw_prop(box, scn, 'mol_render', 'Render', boolean=True)
 
+        draw_prop(box, psys.settings, 'mol_bakeuv', 'Bake UV', boolean=True)
         row = box.row()
-
-        if obj.data.uv_layers.active != None:
-            uv_text = "Bake UV (Current: \"{0}\")".format(obj.data.uv_layers.active.name)
-            draw_prop(row, psys.settings, 'mol_bakeuv', uv_text, boolean=True)
-        else:
-            row.active = False
-            draw_prop(row, psys.settings, 'mol_bakeuv', 'Bake UV (current: None)', boolean=True)
+        row.active = psys.settings.mol_bakeuv
+        row = row.row()
+        row.label(text='UV:')
+        row.prop_search(
+            psys.settings, 'mol_uv_name', obj.data, 'uv_layers', text=''
+        )
 
         box = layout.box()
         box.label(text='Operators:')
         row = box.row()
-        icon = 'PARTICLE_DATA'
 
         if scn.mol_simrun == False and psys.point_cache.is_baked == False:
             row.enabled = True
             row.operator(
                 "object.mol_simulate",
-                icon=icon,
-                text="Start Molecular Simulation"
+                text="Simulate"
             )
+            box.operator("wm.mol_bake_modal", text="Bake")
             row = box.row()
             row.enabled = False
-            row.operator("ptcache.free_bake_all", text="Free All Bakes")
+            row.operator("ptcache.free_bake_all", text="Free")
 
         if psys.point_cache.is_baked == True and scn.mol_simrun == False:
-            row.enabled = False
             row.operator(
                 "object.mol_simulate",
-                icon=icon,
-                text="Simulation baked"
+                text="Simulate"
             )
             row = box.row()
+            row.enabled = False
+            row.operator("wm.mol_bake_modal", text="Bake")
+            row = box.row()
             row.enabled = True
-            row.operator("ptcache.free_bake_all", text="Free All Bakes")
+            row.operator("ptcache.free_bake_all", text="Free")
 
         if scn.mol_simrun == True:
             row.enabled = False
             row.operator(
                 "object.mol_simulate",
-                icon=icon,
                 text="Process: {} left".format(scn.mol_timeremain)
             )
             row = box.row()
             row.enabled = False
-            row.operator("ptcache.free_bake_all", text="Free All Bakes")
-
-        box.operator("wm.mol_bake_modal", text="Bake")
+            row.operator("wm.mol_bake_modal", text="Bake")
+            row = box.row()
+            row.enabled = False
+            row.operator("ptcache.free_bake_all", text="Free")
 
 
 class MolecularToolsPanel(MolecularBasePanel):
