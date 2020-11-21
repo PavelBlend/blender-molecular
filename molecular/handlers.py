@@ -65,8 +65,6 @@ def frame_change_pre_handler(scene):
         obj = utils.get_object(bpy.context, ob)
         for psys in obj.particle_systems:
             if psys.settings.mol_active:
-                if psys.point_cache.is_baked and operators.baking:
-                    continue
                 par_attrs = get_par_attrs(psys, scene, cache_folder)
                 if par_attrs:
                     loc = par_attrs[cache.LOCATION]
@@ -119,13 +117,16 @@ def frame_change_pre_handler(scene):
                         values = get_debug_values(debug_file_path)
                         if values:
                             psys.particles.foreach_set('velocity', values)
+                            psys.particles.foreach_set('angular_velocity', values)
                         else:
                             values = [0.0, ] * len(psys.particles) * 3
                             psys.particles.foreach_set('velocity', values)
+                            psys.particles.foreach_set('angular_velocity', values)
                 else:
                     null_values = [-1000.0, ] * len(psys.particles) * 3
                     psys.particles.foreach_set('location', null_values)
                     psys.particles.foreach_set('velocity', null_values)
+                    psys.particles.foreach_set('angular_velocity', null_values)
 
 
 def register():

@@ -391,6 +391,14 @@ class MolBakeModal(bpy.types.Operator):
         return {'PASS_THROUGH'}
 
     def execute(self, context):
+        for ob in bpy.data.objects:
+            obj = get_object(context, ob)
+            for psys in obj.particle_systems:
+                if psys.settings.mol_active:
+                    base_psys = ob.particle_systems[psys.name]
+                    base_psys.settings.use_rotations = True
+                    base_psys.settings.rotation_mode = 'NONE'
+                    base_psys.settings.angular_velocity_mode = 'NONE'
         global baking
         baking = True
         scene = context.scene
