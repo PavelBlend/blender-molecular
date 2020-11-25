@@ -5,3 +5,4 @@ build
 *.html
 .vscode
 *.zip
+*.bat
