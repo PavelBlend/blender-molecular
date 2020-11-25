@@ -1,15 +1,15 @@
 ![Molecular Addon for Blender](https://github.com/scorpion81/Blender-Molecular-Script/workflows/Molecular%20Addon%20for%20Blender/badge.svg)
 
-Blender-Molecular-Script
+Blender Molecular
 ========================
 
-This is my molecular python script for blender. Inspired from the 2d simulator Really (1998) and Lagoa Multiphysic in Softimage.
+This is molecular addon for blender. Inspired from the 2d simulator Really (1998) and Lagoa Multiphysic in Softimage.
 
-To download the latest version go on my blog:
+To download the latest version:
 
-http://pyroevil.com/molecular-script-download/
+https://github.com/scorpion81/Blender-Molecular-Script/releases
 
-The script can be installed like any other addons in Blender:
+The addon can be installed like any other addons in Blender:
 First way:
 - unzip the folder "molecular" in your "x.xx\scripts\addons" blender directory
 
@@ -24,8 +24,5 @@ Second Way:
 To activate the plugins:
 - Open Blender
 - Go in File > User Preferences > Addons tab
-- In the "Object" categories, you must find "Molecular"
+- In the "Physics" categories, you must find "Molecular"
 - Check it , close the "Blender user preferences" windows and have fun.
-
-
-Visit my blog about this script for donation, comments or more detail : http://pyroevil.com
