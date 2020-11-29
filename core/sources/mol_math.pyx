@@ -1,10 +1,3 @@
-#cython: profile=False
-#cython: boundscheck=False
-#cython: cdivision=True
-
-cimport cython
-
-
 cdef float fabs(float value)nogil:
     if value >= 0:
         return value

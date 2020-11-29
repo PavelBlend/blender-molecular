@@ -1,6 +1,4 @@
-cimport types
-
-
+#PROFILER_START
 cdef float fps = 0
 cdef int substep = 0
 cdef float deltatime = 0
@@ -11,8 +9,9 @@ cdef int newlinks = 0
 cdef int totallinks = 0
 cdef int totaldeadlinks = 0
 cdef int *deadlinks = NULL
-cdef types.Particle *parlist = NULL
-cdef types.SParticle *parlistcopy = NULL
-cdef types.ParSys *psys = NULL
-cdef types.KDTree *kdtree = NULL
+cdef Particle *parlist = NULL
+cdef SParticle *parlistcopy = NULL
+cdef ParSys *psys = NULL
+cdef KDTree *kdtree = NULL
 cdef int *par_id_list = NULL
+#PROFILER_END

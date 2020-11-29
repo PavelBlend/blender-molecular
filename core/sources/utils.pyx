@@ -1,17 +1,10 @@
-#cython: profile=False
-#cython: boundscheck=False
-#cython: cdivision=True
-
-cimport types
-
-
-cdef void quick_sort(types.SParticle *a, int n, int axis)nogil:
+cdef void quick_sort(SParticle *a, int n, int axis)nogil:
     if (n < 2):
         return
-    cdef types.SParticle t
+    cdef SParticle t
     cdef float p = a[n / 2].loc[axis]
-    cdef types.SParticle *l = a
-    cdef types.SParticle *r = a + n - 1
+    cdef SParticle *l = a
+    cdef SParticle *r = a + n - 1
     while l <= r:
         if l[0].loc[axis] < p:
             l += 1
@@ -36,7 +29,7 @@ cdef void quick_sort(types.SParticle *a, int n, int axis)nogil:
 
 
 cdef int compare_x (const void *u, const void *v)nogil:
-    cdef float w = (<types.SParticle*>u).loc[0] - (<types.SParticle*>v).loc[0]
+    cdef float w = (<SParticle*>u).loc[0] - (<SParticle*>v).loc[0]
     if w < 0:
         return -1
     if w > 0:
@@ -45,7 +38,7 @@ cdef int compare_x (const void *u, const void *v)nogil:
 
 
 cdef int compare_y (const void *u, const void *v)nogil:
-    cdef float w = (<types.SParticle*>u).loc[1] - (<types.SParticle*>v).loc[1]
+    cdef float w = (<SParticle*>u).loc[1] - (<SParticle*>v).loc[1]
     if w < 0:
         return -1
     if w > 0:
@@ -54,7 +47,7 @@ cdef int compare_y (const void *u, const void *v)nogil:
 
 
 cdef int compare_z (const void *u, const void *v)nogil:
-    cdef float w = (<types.SParticle*>u).loc[2] - (<types.SParticle*>v).loc[2]
+    cdef float w = (<SParticle*>u).loc[2] - (<SParticle*>v).loc[2]
     if w < 0:
         return -1
     if w > 0:
@@ -63,7 +56,7 @@ cdef int compare_z (const void *u, const void *v)nogil:
 
 
 cdef int compare_id (const void *u, const void *v)nogil:
-    cdef float w = (<types.SParticle*>u).id - (<types.SParticle*>v).id
+    cdef float w = (<SParticle*>u).id - (<SParticle*>v).id
     if w < 0:
         return -1
     if w > 0:

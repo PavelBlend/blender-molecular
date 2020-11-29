@@ -67,7 +67,7 @@ class MolSimulate(bpy.types.Operator):
         etime = clock()
         print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
         mol_stime = clock()
-        mol_report = core.init.init(mol_exportdata)
+        mol_report = core.init(mol_exportdata)
         etime = clock()
         print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
         print("  total numbers of particles: " + str(mol_report))
@@ -282,7 +282,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             scene.frame_set(frame=scene.frame_start)
 
-            core.memory.memfree()
+            core.memfree()
             scene.mol_simrun = False
             mol_exportdata = scene.mol_exportdata
             mol_exportdata.clear()
@@ -300,7 +300,7 @@ class MolSimulateModal(bpy.types.Operator):
             mol_exportdata = context.scene.mol_exportdata
             mol_exportdata.clear()
             simulate.pack_data(context, False)
-            mol_importdata = core.simulation.simulate(mol_exportdata)
+            mol_importdata = core.simulate(mol_exportdata)
 
             framesubstep = frame_current / (mol_substep + 1)   
 
