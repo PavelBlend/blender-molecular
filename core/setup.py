@@ -15,7 +15,7 @@ core_file_path = core_file_name + os.extsep + core_file_extension
 cython_extension = 'pyx'
 profiler = False
 profiler_nogil = False
-profiler_white_space_limit = 4
+profiler_white_space_limit = 32
 temp_files = ('core.pyx', )
 
 
@@ -117,7 +117,7 @@ def preprocessor(core_code):
             if profiler and use_profiler:
                 if not ('print' in line or 'printf' in line):
                     if (use_nogil or is_nogil_function):
-                        print_code = 'printf("%d\\n", {1})'
+                        print_code = 'printf("{} {}\\n")'.format(line_index, line)
                         if not profiler_nogil:
                             print_code = ''
                     else:
