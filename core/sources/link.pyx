@@ -399,7 +399,7 @@ cdef void create_link(int par_id, int max_link, int init, int parothers_id=-1)no
     free(link)
     # free(par)
     # free(par2)
-    ##PROFILER_END_NOGIL
+    #PROFILER_END_NOGIL
 
 
 cdef void solve_link(Particle *par)nogil:
