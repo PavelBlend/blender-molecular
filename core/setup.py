@@ -31,11 +31,13 @@ def install_core(root, file_name):
         if not os.path.exists(molecular_path):
             os.makedirs(molecular_path)
         input_core_path = os.path.join(root, file_name)
+        output_core_file = os.path.join(molecular_path, file_name)
         shutil.copyfile(
             input_core_path,
-            os.path.join(molecular_path, file_name)
+            output_core_file
         )
         os.remove(input_core_path)
+        print('\n\n\tMolecular Core installed into:\n\n\t\t{}\n\n'.format(output_core_file))
     else:
         print('\n' * 4)
         print('\tWarning:\n\n')
