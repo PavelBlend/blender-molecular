@@ -16,6 +16,36 @@ cython_extension = 'pyx'
 profiler = False
 profiler_nogil = False
 profiler_white_space_limit = 4
+temp_files = ('core.pyx', )
+
+
+def install_core(root, file_name):
+    addon_path = os.environ.get('BLENDER_USER_ADDON_PATH', None)
+    if addon_path:
+        if addon_path[:-1] == '/':
+            addon_path = addon_path[:-1]
+        if not addon_path.endswith(os.path.join('scripts', 'addons')):
+            raise BaseException('Incorrect addons path')
+        molecular_path = os.path.join(addon_path, 'molecular')
+        if not os.path.exists(molecular_path):
+            os.makedirs(molecular_path)
+        shutil.copyfile(
+            os.path.join(root, file_name),
+            os.path.join(molecular_path, file_name)
+        )
+
+
+def remove_files():
+    for root, dirs, files in os.walk('.'):
+        for file in files:
+            module_name, extension = os.path.splitext(file)
+            extension = extension.lower()
+            if not extension in ('.pyx', '.pyd', '.py', '.bat', '.md') or file in temp_files:
+                src_file = os.path.join(root, file)
+                os.remove(src_file)
+            if extension == '.pyd':
+                install_core(root, file)
+    shutil.rmtree('build')
 
 
 with open(core_file_path, 'r') as core_file:
@@ -129,9 +159,12 @@ else:
         cython_directives={'language_level' : "3"}
     )
 
-setup(
-    name='Molecular',
-    cmdclass={'build_ext': build_ext},
-    include_dirs=['.'],
-    ext_modules=[ext_module, ]
-)
+try:
+    setup(
+        name='Molecular',
+        cmdclass={'build_ext': build_ext},
+        include_dirs=['.'],
+        ext_modules=[ext_module, ]
+    )
+finally:
+    remove_files()
