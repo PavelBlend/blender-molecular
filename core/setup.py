@@ -117,7 +117,7 @@ def preprocessor(core_code):
             if profiler and use_profiler:
                 if not ('print' in line or 'printf' in line):
                     if (use_nogil or is_nogil_function):
-                        print_code = 'printf("{} {}\\n")'.format(line_index, line)
+                        print_code = 'printf("{} {}\\n")'.format('{:0>4}'.format(line_index), line)
                         if not profiler_nogil:
                             print_code = ''
                     else:
