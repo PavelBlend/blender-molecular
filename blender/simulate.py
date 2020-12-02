@@ -1,4 +1,4 @@
-import math, struct, os
+import math, struct, os, numpy
 
 import bpy
 
@@ -86,9 +86,9 @@ def pack_data(context, initiate):
                 psys.settings.mol_density = float(psys.settings.mol_matter)
             if psys.settings.mol_active and len(psys.particles):
                 parlen = len(psys.particles)
-                par_loc = [0, 0, 0] * parlen
-                par_vel = [0, 0, 0] * parlen
-                par_size = [0] * parlen
+                par_loc = numpy.zeros(parlen * 3, dtype=numpy.float32)
+                par_vel = numpy.zeros(parlen * 3, dtype=numpy.float32)
+                par_size = numpy.zeros(parlen, dtype=numpy.float32)
                 par_alive = []
                 for par in psys.particles:
                     parnum += 1

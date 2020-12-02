@@ -1,10 +1,13 @@
-import os
+# standart modules
+import os, numpy
 from time import perf_counter as clock, sleep, strftime, gmtime, time
 
+# blender modules
 import bpy
 from mathutils import Vector
 from mathutils.geometry import barycentric_transform as barycentric
 
+# addon modules
 from . import simulate, core, cache
 from .utils import get_object, destroy_caches
 
@@ -86,7 +89,7 @@ class MolSetGlobalUV(bpy.types.Operator):
         obj = get_object(context, context.object)
 
         psys = obj.particle_systems.active
-        coord = [0, 0, 0] * len(psys.particles)
+        coord = numpy.zeros(3 * psys.particles, dtype=numpy.float32)
         psys.particles.foreach_get("location", coord)
         psys.particles.foreach_set("angular_velocity", coord)
 
@@ -264,7 +267,7 @@ class MolSimulateModal(bpy.types.Operator):
                         par_cache = cache.ParticlesCache()
                         par_cache.add_attribute(cache.VELOCITY)
                         framesubstep = frame_current / (mol_substep + 1)  
-                        name = '{}_{:0>6}.bin'.format(psys.settings.name, int(framesubstep))
+                        name = '{}_{:0>6}'.format(psys.settings.name, int(framesubstep))
                         cache_folder = bpy.path.abspath(scene.mol_cache_folder)
                         file_path = os.path.join(cache_folder, name)
                         if not os.path.exists(cache_folder):
@@ -314,7 +317,7 @@ class MolSimulateModal(bpy.types.Operator):
                         if framesubstep == int(framesubstep):
                             par_cache = cache.ParticlesCache()
                             par_cache.add_attribute(cache.VELOCITY)
-                            name = '{}_{:0>6}.bin'.format(psys.settings.name, int(framesubstep))
+                            name = '{}_{:0>6}'.format(psys.settings.name, int(framesubstep))
                             cache_folder = bpy.path.abspath(scene.mol_cache_folder)
                             file_path = os.path.join(cache_folder, name)
                             if not os.path.exists(cache_folder):

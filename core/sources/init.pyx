@@ -45,7 +45,6 @@ cpdef init(importdata):
     cdef int jj = 0
     cdef int index = 0
     cdef char cache_folder[256]
-    cdef int fmt = 0
     debug_files = <DebugFiles *>malloc(psysnum * cython.sizeof(DebugFiles))
 
     for i in xrange(psysnum):
@@ -57,33 +56,6 @@ cpdef init(importdata):
         psys[i].parnum = importdata[i + 1][0]
         psys[i].particles = <Particle *>malloc(psys[i].parnum * cython.sizeof(Particle))
         psys[i].particles = &parlist[jj]
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_friction_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_friction_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_tension_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_tension_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_stiffness_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_stiffness_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_estiffness_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_estiffness_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_damping_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_damping_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_edamping_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_edamping_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_broken_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_broken_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_ebroken_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_ebroken_file)
-
-        fwrite(&psys[i].parnum, cython.sizeof(int), 1, debug_files[i].link_chance_file)
-        fwrite(&fmt, cython.sizeof(char), 1, debug_files[i].link_chance_file)
 
         ########################################################################
         ######################## TEXTURES VALUES START #########################

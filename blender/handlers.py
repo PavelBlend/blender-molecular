@@ -1,4 +1,4 @@
-import os, struct
+import os, struct, numpy
 
 import bpy
 
@@ -12,31 +12,17 @@ def get_debug_values(debug_file_path):
     if not os.path.exists(debug_file_path) or not os.path.isfile(debug_file_path):
         return
     with open(debug_file_path, 'rb') as file:
-        data = bytearray(file.read())
-    p = 0
-    values_count = struct.unpack('<I', data[p : p + 4])[0]
-    p += 4
-    value_format = struct.unpack('<B', data[p : p + 1])[0]
-    p += 1
-    values = [None, ] * values_count * 3
-    if value_format == 0:
-        format_string = '<f'
-        format_size = 4
-        for i in range(0, values_count * 3, 3):
-            value = struct.unpack(format_string, data[p : p + format_size])[0]
-            p += format_size
-            values[i] = value
-            values[i + 1] = 0.0
-            values[i + 2] = 0.0
+        values = numpy.fromfile(file, dtype=numpy.float32)
     return values
 
 
 def get_par_attrs(psys, scene, cache_folder):
     par_attrs = None
-    cache_file_name = '{}_{:0>6}.bin'.format(psys.settings.name, scene.frame_current)
+    cache_file_name = '{}_{:0>6}'.format(psys.settings.name, scene.frame_current)
     file_path = os.path.join(cache_folder, cache_file_name)
+    main_file_path = file_path + '.bin'
     par_cache = cache.ParticlesCache()
-    if os.path.exists(file_path) and os.path.isfile(file_path):
+    if os.path.exists(main_file_path) and os.path.isfile(main_file_path):
         par_attrs = par_cache.read(file_path)
     return par_attrs
 
@@ -70,12 +56,13 @@ def frame_change_pre_handler(scene):
                 if psys.point_cache.is_baked:
                     continue
                 par_attrs = get_par_attrs(psys, scene, cache_folder)
+                particles_count = len(psys.particles)
                 if par_attrs:
                     loc = par_attrs[cache.LOCATION]
                     psys.particles.foreach_set('location', loc)
                     if not psys.settings.mol_use_debug_par_attr:
                         vel = par_attrs.get(cache.VELOCITY, None)
-                        if vel:
+                        if not vel is None:
                             psys.particles.foreach_set('velocity', vel)
                     else:
                         attr_name = psys.settings.mol_debug_par_attr_name
@@ -119,15 +106,18 @@ def frame_change_pre_handler(scene):
                         debug_file_name = '{}_{}.bin'.format(psys.settings.name, attr)
                         debug_file_path = os.path.join(cache_folder, debug_file_name)
                         values = get_debug_values(debug_file_path)
-                        if values:
-                            psys.particles.foreach_set('velocity', values)
-                            psys.particles.foreach_set('angular_velocity', values)
+                        if not values is None:
+                            nulls = numpy.zeros(particles_count, dtype=numpy.float32)
+                            vector_values = numpy.dstack([values, nulls, nulls])[0].ravel()
+                            del values
+                            psys.particles.foreach_set('velocity', vector_values)
+                            psys.particles.foreach_set('angular_velocity', vector_values)
                         else:
-                            values = [0.0, ] * len(psys.particles) * 3
-                            psys.particles.foreach_set('velocity', values)
-                            psys.particles.foreach_set('angular_velocity', values)
+                            vector_values = numpy.full(3 * particles_count, 0.0, dtype=numpy.float32)
+                            psys.particles.foreach_set('velocity', vector_values)
+                            psys.particles.foreach_set('angular_velocity', vector_values)
                 else:
-                    null_values = [-1000.0, ] * len(psys.particles) * 3
+                    null_values = numpy.full(3 * particles_count, -1000.0, dtype=numpy.float32)
                     psys.particles.foreach_set('location', null_values)
                     psys.particles.foreach_set('velocity', null_values)
                     psys.particles.foreach_set('angular_velocity', null_values)
