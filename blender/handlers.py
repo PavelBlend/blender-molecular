@@ -55,6 +55,8 @@ def render_init_handler(scene):
 
 @bpy.app.handlers.persistent
 def frame_change_pre_handler(scene):
+    if not scene.mol_use_cache:
+        return
     global is_rendering
     if is_rendering:
         return

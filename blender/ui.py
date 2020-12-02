@@ -475,6 +475,7 @@ class MolecularSimulatePanel(MolecularBasePanel):
         box = layout.box()
         box.label(text='General:')
         draw_prop(box, scn, 'mol_cache_folder', 'Cache Folder')
+        draw_prop(box, scn, 'mol_use_cache', 'Use Molecular Cache', boolean=True)
         draw_prop(box, scn, 'frame_start', 'Start Frame')
         draw_prop(box, scn, 'frame_end', 'End Frame')
 

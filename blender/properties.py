@@ -306,3 +306,6 @@ def define_props():
     bpy.types.Scene.mol_cache_folder = bpy.props.StringProperty(
         name='Cache Folder', subtype='DIR_PATH'
     )
+    bpy.types.Scene.mol_use_cache = bpy.props.BoolProperty(
+        name='Use Molecular Cache', default=True
+    )
