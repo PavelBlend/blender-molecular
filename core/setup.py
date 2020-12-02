@@ -17,10 +17,11 @@ profiler = False
 profiler_nogil = False
 profiler_white_space_limit = 32
 temp_files = ('core.pyx', )
+env_path = 'BLENDER_USER_ADDON_PATH'
 
 
 def install_core(root, file_name):
-    addon_path = os.environ.get('BLENDER_USER_ADDON_PATH', None)
+    addon_path = os.environ.get(env_path, None)
     if addon_path:
         if addon_path[:-1] == '/':
             addon_path = addon_path[:-1]
@@ -35,6 +36,16 @@ def install_core(root, file_name):
             os.path.join(molecular_path, file_name)
         )
         os.remove(input_core_path)
+    else:
+        print('\n' * 4)
+        print('\tWarning:\n\n')
+        print('\t\tMolecular core is not installed in Blender addons.')
+        print('\t\tAdd an {} environment variable.'.format(env_path))
+        example_addon_path = 'C:\\Users\\Admin\\AppData\\Roaming\\Blender Foundation\\Blender\\2.90\\scripts\\addons\\'
+        print('\t\tFor example:')
+        print('\t\t\t{}'.format(example_addon_path))
+        print('\t\tOr copy the Molecular core file manually.')
+        print('\n' * 4)
 
 
 def remove_files():
