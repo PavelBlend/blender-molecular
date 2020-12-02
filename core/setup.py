@@ -29,10 +29,12 @@ def install_core(root, file_name):
         molecular_path = os.path.join(addon_path, 'molecular')
         if not os.path.exists(molecular_path):
             os.makedirs(molecular_path)
+        input_core_path = os.path.join(root, file_name)
         shutil.copyfile(
-            os.path.join(root, file_name),
+            input_core_path,
             os.path.join(molecular_path, file_name)
         )
+        os.remove(input_core_path)
 
 
 def remove_files():
