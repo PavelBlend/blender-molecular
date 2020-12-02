@@ -1,14 +1,3 @@
-#cython: profile=False
-#cython: boundscheck=False
-#cython: cdivision=True
-
-cimport cython
-
-from libc.stdlib cimport free, calloc
-from libc.stdio cimport printf, fopen, fclose, FILE, snprintf
-from libc.string cimport strlen, strcat
-
-
 # debug files
 cdef struct DebugFiles:
     FILE *link_friction_file
@@ -34,6 +23,9 @@ cdef char* get_file_path(const char *file, const char *directory)nogil:
 
 
 cdef void open_debug_files(char *path, int psys_id)nogil:
+    #PROFILER_START_NOGIL
+    global debug_files
+
     file_path = get_file_path(path, 'link_friction.bin')
     debug_files[psys_id].link_friction_file = fopen(file_path, 'wb')
     free(file_path)
@@ -69,9 +61,12 @@ cdef void open_debug_files(char *path, int psys_id)nogil:
     file_path = get_file_path(path, 'link_chance.bin')
     debug_files[psys_id].link_chance_file = fopen(file_path, 'wb')
     free(file_path)
+    #PROFILER_END_NOGIL
 
 
 cdef void close_debug_files(int psys_count)nogil:
+    #PROFILER_START_NOGIL
+    global debug_files
     cdef int psys_id
     for psys_id in xrange(psys_count):
         fclose(debug_files[psys_id].link_friction_file)
@@ -83,4 +78,4 @@ cdef void close_debug_files(int psys_count)nogil:
         fclose(debug_files[psys_id].link_broken_file)
         fclose(debug_files[psys_id].link_ebroken_file)
         fclose(debug_files[psys_id].link_chance_file)
-    free(debug_files)
+    #PROFILER_END_NOGIL

@@ -65,6 +65,8 @@ def frame_change_pre_handler(scene):
         obj = utils.get_object(bpy.context, ob)
         for psys in obj.particle_systems:
             if psys.settings.mol_active:
+                if psys.point_cache.is_baked:
+                    continue
                 par_attrs = get_par_attrs(psys, scene, cache_folder)
                 if par_attrs:
                     loc = par_attrs[cache.LOCATION]
