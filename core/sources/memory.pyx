@@ -15,7 +15,6 @@ cpdef memfree():
     global parlistcopy
     global psys
     global par_id_list
-    global debug_files
 
     cdef int i = 0
 
@@ -71,9 +70,6 @@ cpdef memfree():
         parlistcopy = NULL
         free(parlist)
         parlist = NULL
-
-    close_debug_files(psysnum)
-    free(debug_files)
 
     parnum = 0
     psysnum = 0

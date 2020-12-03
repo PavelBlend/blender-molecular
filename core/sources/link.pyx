@@ -139,18 +139,6 @@ cdef void create_link(int par_id, int max_link, int init, int parothers_id=-1)no
     else:
         relink_chance_1 = randomize_value(par.sys.relink_chance, par.sys.relink_chancerand)
 
-    if init == 1:
-        global debug_files
-        fwrite(&link_friction_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_friction_file)
-        fwrite(&link_tension_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_tension_file)
-        fwrite(&link_stiff_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_stiffness_file)
-        fwrite(&link_estiff_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_estiffness_file)
-        fwrite(&link_damp_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_damping_file)
-        fwrite(&link_edamp_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_edamping_file)
-        fwrite(&link_broken_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_broken_file)
-        fwrite(&link_ebroken_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_ebroken_file)
-        fwrite(&relink_chance_1, cython.sizeof(float), 1, debug_files[par.sys.id].link_chance_file)
-
     # relink tension
     if par.sys.use_relink_tension_tex:
         relink_tension_1 = par.sys.relink_tension_tex[p_id]

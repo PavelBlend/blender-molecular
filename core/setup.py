@@ -15,7 +15,7 @@ core_file_path = core_file_name + os.extsep + core_file_extension
 cython_extension = 'pyx'
 profiler = False
 profiler_nogil = False
-profiler_white_space_limit = 32
+profiler_white_space_limit = 128
 temp_files = ('core.pyx', )
 env_path = 'BLENDER_USER_ADDON_PATH'
 

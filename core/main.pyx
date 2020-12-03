@@ -41,7 +41,6 @@ cdef extern from "stdlib.h":
 #include kd_tree
 #include collide
 #include test
-#include debug
 #include link
 #include init
 #include simulation

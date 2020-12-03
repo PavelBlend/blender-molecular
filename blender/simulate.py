@@ -275,8 +275,7 @@ def pack_data(context, initiate):
                         par_size,
                         par_mass,
                         par_alive,
-                        params,
-                        psys.settings.name + '_'
+                        params
                     ))
 
                 else:

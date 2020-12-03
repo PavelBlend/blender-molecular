@@ -62,8 +62,7 @@ class MolSimulate(bpy.types.Operator):
             mol_substep,
             0,
             0,
-            cpu,
-            bpy.path.abspath(scene.mol_cache_folder)
+            cpu
         ])
         mol_stime = clock()
         simulate.pack_data(context, True)
@@ -267,7 +266,7 @@ class MolSimulateModal(bpy.types.Operator):
                         par_cache = cache.ParticlesCache()
                         par_cache.add_attribute(cache.VELOCITY)
                         framesubstep = frame_current / (mol_substep + 1)  
-                        name = '{}_{:0>6}'.format(psys.settings.name, int(framesubstep))
+                        name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
                         cache_folder = bpy.path.abspath(scene.mol_cache_folder)
                         file_path = os.path.join(cache_folder, name)
                         if not os.path.exists(cache_folder):
@@ -317,7 +316,7 @@ class MolSimulateModal(bpy.types.Operator):
                         if framesubstep == int(framesubstep):
                             par_cache = cache.ParticlesCache()
                             par_cache.add_attribute(cache.VELOCITY)
-                            name = '{}_{:0>6}'.format(psys.settings.name, int(framesubstep))
+                            name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
                             cache_folder = bpy.path.abspath(scene.mol_cache_folder)
                             file_path = os.path.join(cache_folder, name)
                             if not os.path.exists(cache_folder):

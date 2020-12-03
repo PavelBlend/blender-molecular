@@ -18,7 +18,7 @@ def get_debug_values(debug_file_path):
 
 def get_par_attrs(psys, scene, cache_folder):
     par_attrs = None
-    cache_file_name = '{}_{:0>6}'.format(psys.settings.name, scene.frame_current)
+    cache_file_name = '{}_{:0>6}'.format(psys.point_cache.name, scene.frame_current)
     file_path = os.path.join(cache_folder, cache_file_name)
     main_file_path = file_path + '.bin'
     par_cache = cache.ParticlesCache()
@@ -103,7 +103,7 @@ def frame_change_pre_handler(scene):
                         elif attr_name == 'RELINK_LINKING':
                             attr = 'relink_chance'
 
-                        debug_file_name = '{}_{}.bin'.format(psys.settings.name, attr)
+                        debug_file_name = '{}_{}.bin'.format(psys.point_cache.name, attr)
                         debug_file_path = os.path.join(cache_folder, debug_file_name)
                         values = get_debug_values(debug_file_path)
                         if not values is None:

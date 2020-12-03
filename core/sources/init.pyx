@@ -1,10 +1,3 @@
-cdef void from_str_to_char_array(source, char *dest):
-    cdef size_t source_len = len(source) 
-    cdef bytes as_bytes = source.encode('ascii')
-    cdef const char *as_ptr = <const char *>(as_bytes)
-    memcpy(dest, as_ptr, source_len)
-
-
 cpdef init(importdata):
     #PROFILER_START
     global fps
@@ -22,7 +15,6 @@ cpdef init(importdata):
     global parlistcopy
     global psys
     global par_id_list
-    global debug_files
 
     cdef int i = 0
     cdef int ii = 0
@@ -44,14 +36,8 @@ cpdef init(importdata):
     parlistcopy = <SParticle *>malloc(parnum * cython.sizeof(SParticle))
     cdef int jj = 0
     cdef int index = 0
-    cdef char cache_folder[256]
-    debug_files = <DebugFiles *>malloc(psysnum * cython.sizeof(DebugFiles))
 
     for i in xrange(psysnum):
-        memset(cache_folder, 0, 256)
-        from_str_to_char_array(importdata[0][5] + importdata[i + 1][7], cache_folder)
-        open_debug_files(cache_folder, i)
-
         psys[i].id = i
         psys[i].parnum = importdata[i + 1][0]
         psys[i].particles = <Particle *>malloc(psys[i].parnum * cython.sizeof(Particle))
@@ -305,8 +291,6 @@ cpdef init(importdata):
             # free(parlist[i].neighbours)
             parlist[i].neighboursnum = 0
 
-    # close_debug_files(psysnum)
-    # free(debug_files)
     totallinks += newlinks
     print("  New links created: ", newlinks)
     #PROFILER_END
