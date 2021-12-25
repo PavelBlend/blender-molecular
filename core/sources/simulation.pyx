@@ -14,7 +14,7 @@ cpdef simulate(importdata):
 
     cdef int i = 0
     cdef int ii = 0
-    cdef int profiling = 0
+    cdef int profiling = 1
 
     cdef float minX = INT_MAX
     cdef float minY = INT_MAX
@@ -226,6 +226,7 @@ cpdef simulate(importdata):
     if profiling == 1:
         print("-->export time", clock() - stime, "sec")
         print("-->all process time", clock() - stime2, "sec")
+        print("\n\n")
     #PROFILER_END
     return exportdata
 
