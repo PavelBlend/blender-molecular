@@ -1,29 +1,69 @@
-import os, struct, numpy
+import os
+import struct
 
 import bpy
+import numpy
 
-from . import utils, cache, operators
+from . import utils
+from . import cache
 
 
 is_rendering = False
 
 
-def get_debug_values(debug_file_path):
-    if not os.path.exists(debug_file_path) or not os.path.isfile(debug_file_path):
+debug_attrs = {
+    # link
+    'LINK_FRICTION': 'link_friction',
+    'LINK_TENSION': 'link_tension',
+    'LINK_STIFFNESS': 'link_stiffness',
+    'LINK_ESTIFFNESS': 'link_estiffness',
+    'LINK_DAMPING': 'link_damping',
+    'LINK_EDAMPING': 'link_edamping',
+    'LINK_BROKEN': 'link_broken',
+    'LINK_EBROKEN': 'link_ebroken',
+
+    # relink
+    'RELINK_FRICTION': 'relink_friction',
+    'RELINK_TENSION': 'relink_tension',
+    'RELINK_STIFFNESS': 'relink_stiffness',
+    'RELINK_ESTIFFNESS': 'relink_estiffness',
+    'RELINK_DAMPING': 'relink_damping',
+    'RELINK_EDAMPING': 'relink_edamping',
+    'RELINK_BROKEN': 'relink_broken',
+    'RELINK_EBROKEN': 'relink_ebroken',
+    'RELINK_LINKING': 'relink_chance'
+}
+
+
+def get_debug_values(file_path):
+    # get particle debug values from debug file
+
+    if not os.path.exists(file_path):
         return
-    with open(debug_file_path, 'rb') as file:
+
+    if not os.path.isfile(file_path):
+        return
+
+    with open(file_path, 'rb') as file:
         values = numpy.fromfile(file, dtype=numpy.float32)
+
     return values
 
 
-def get_par_attrs(psys, scene, cache_folder):
-    par_attrs = None
-    cache_file_name = '{}_{:0>6}'.format(psys.point_cache.name, scene.frame_current)
-    file_path = os.path.join(cache_folder, cache_file_name)
-    main_file_path = file_path + '.bin'
-    par_cache = cache.ParticlesCache()
-    if os.path.exists(main_file_path) and os.path.isfile(main_file_path):
-        par_attrs = par_cache.read(file_path)
+def get_par_attrs(cache_name, cache_folder, frame_index):
+    cache_file_name = '{}_{:0>6}'.format(cache_name, frame_index)
+    cache_file_path = os.path.join(cache_folder, cache_file_name)
+    full_path = cache_file_path + cache.EXT_HEAD
+
+    if not os.path.exists(full_path):
+        return
+
+    if not os.path.isfile(full_path):
+        return
+
+    par_cache = cache.ParticlesIO()
+    par_attrs = par_cache.read(cache_file_path)
+
     return par_attrs
 
 
@@ -43,84 +83,91 @@ def render_init_handler(scene):
 def frame_change_pre_handler(scene):
     if not scene.mol_use_cache:
         return
+
     global is_rendering
+
     if is_rendering:
         return
+
     if scene.mol_simrun:
         return
-    cache_folder = bpy.path.abspath(scene.mol_cache_folder)
-    for ob in bpy.data.objects:
-        obj = utils.get_object(bpy.context, ob)
-        for psys in obj.particle_systems:
-            if psys.settings.mol_active:
-                if psys.point_cache.is_baked:
-                    continue
-                par_attrs = get_par_attrs(psys, scene, cache_folder)
-                particles_count = len(psys.particles)
-                if par_attrs:
-                    loc = par_attrs[cache.LOCATION]
-                    psys.particles.foreach_set('location', loc)
-                    if not psys.settings.mol_use_debug_par_attr:
-                        vel = par_attrs.get(cache.VELOCITY, None)
-                        if not vel is None:
-                            psys.particles.foreach_set('velocity', vel)
-                    else:
-                        attr_name = psys.settings.mol_debug_par_attr_name
-                        # link
-                        if attr_name == 'LINK_FRICTION':
-                            attr = 'link_friction'
-                        elif attr_name == 'LINK_TENSION':
-                            attr = 'link_tension'
-                        elif attr_name == 'LINK_STIFFNESS':
-                            attr = 'link_stiffness'
-                        elif attr_name == 'LINK_ESTIFFNESS':
-                            attr = 'link_estiffness'
-                        elif attr_name == 'LINK_DAMPING':
-                            attr = 'link_damping'
-                        elif attr_name == 'LINK_EDAMPING':
-                            attr = 'link_edamping'
-                        elif attr_name == 'LINK_BROKEN':
-                            attr = 'link_broken'
-                        elif attr_name == 'LINK_EBROKEN':
-                            attr = 'link_ebroken'
-                        # relink
-                        if attr_name == 'RELINK_FRICTION':
-                            attr = 'relink_friction'
-                        elif attr_name == 'RELINK_TENSION':
-                            attr = 'relink_tension'
-                        elif attr_name == 'RELINK_STIFFNESS':
-                            attr = 'relink_stiffness'
-                        elif attr_name == 'RELINK_ESTIFFNESS':
-                            attr = 'relink_estiffness'
-                        elif attr_name == 'RELINK_DAMPING':
-                            attr = 'relink_damping'
-                        elif attr_name == 'RELINK_EDAMPING':
-                            attr = 'relink_edamping'
-                        elif attr_name == 'RELINK_BROKEN':
-                            attr = 'relink_broken'
-                        elif attr_name == 'RELINK_EBROKEN':
-                            attr = 'relink_ebroken'
-                        elif attr_name == 'RELINK_LINKING':
-                            attr = 'relink_chance'
 
-                        debug_file_name = '{}_{}.bin'.format(psys.point_cache.name, attr)
-                        debug_file_path = os.path.join(cache_folder, debug_file_name)
-                        values = get_debug_values(debug_file_path)
-                        if not values is None:
-                            nulls = numpy.zeros(particles_count, dtype=numpy.float32)
-                            vector_values = numpy.dstack([values, nulls, nulls])[0].ravel()
-                            del values
-                            psys.particles.foreach_set('velocity', vector_values)
-                            psys.particles.foreach_set('angular_velocity', vector_values)
-                        else:
-                            vector_values = numpy.full(3 * particles_count, 0.0, dtype=numpy.float32)
-                            psys.particles.foreach_set('velocity', vector_values)
-                            psys.particles.foreach_set('angular_velocity', vector_values)
+    cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+
+    for obj in bpy.data.objects:
+        obj = utils.get_object(bpy.context, obj)
+
+        for psys in obj.particle_systems:
+
+            if not psys.settings.mol_active:
+                continue
+
+            if psys.point_cache.is_baked:
+                continue
+
+            frame_index = scene.frame_current
+            cache_name = psys.point_cache.name
+            pars = psys.particles
+            par_count = len(pars)
+            par_attrs = get_par_attrs(cache_name, cache_folder, frame_index)
+
+            if par_attrs:
+                # set location
+                loc_name = cache.attribute_name[cache.LOCATION]
+                loc_values = par_attrs[cache.LOCATION]
+                pars.foreach_set(loc_name, loc_values)
+
+                if not psys.settings.mol_use_debug_par_attr:
+                    # set velocity
+                    vel_values = par_attrs.get(cache.VELOCITY, None)
+                    if not vel_values is None:
+                        vel_name = cache.attribute_name[cache.VELOCITY]
+                        pars.foreach_set(vel_name, vel_values)
+
                 else:
-                    null_values = numpy.full(3 * particles_count, -1000.0, dtype=numpy.float32)
-                    psys.particles.foreach_set('location', null_values)
-                    psys.particles.foreach_set('velocity', null_values)
-                    psys.particles.foreach_set('angular_velocity', null_values)
+                    attr_name = psys.settings.mol_debug_par_attr_name
+                    attr = debug_attrs[attr_name]
+
+                    debug_file_name = '{}_{}{}'.format(
+                        psys.point_cache.name,
+                        attr,
+                        cache.EXT_HEAD
+                    )
+
+                    debug_file_path = os.path.join(
+                        cache_folder,
+                        debug_file_name
+                    )
+
+                    values = get_debug_values(debug_file_path)
+
+                    if not values is None:
+                        nulls = numpy.zeros(par_count, dtype=cache.VEC_TYPE)
+                        vector_values = numpy.dstack(
+                            [values, nulls, nulls]
+                        )[0].ravel()
+                        del values
+                        del nulls
+
+                    else:
+                        vector_values = numpy.full(
+                            par_count * 3,
+                            0.0,
+                            dtype=cache.VEC_TYPE
+                        )
+
+                    pars.foreach_set('velocity', vector_values)
+                    pars.foreach_set('angular_velocity', vector_values)
+
+            else:
+                null_values = numpy.full(
+                    par_count * 3,
+                    -1000.0,
+                    dtype=cache.VEC_TYPE
+                )
+                pars.foreach_set('location', null_values)
+                pars.foreach_set('velocity', null_values)
+                pars.foreach_set('angular_velocity', null_values)
 
 
 def register():

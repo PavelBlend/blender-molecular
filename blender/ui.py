@@ -1,7 +1,7 @@
 import bpy
 
 from . import names
-from .utils import get_object
+from . import utils
 
 
 def get_bool_text(prop):
@@ -14,62 +14,90 @@ def get_bool_text(prop):
 def draw_prop(layout, owner, prop, text, boolean=False):
     row = layout.row()
     row.label(text=text + ':')
+
     if boolean:
         bool_text = get_bool_text(getattr(owner, prop))
         row.prop(owner, prop, toggle=True, text=bool_text)
+
     else:
         row.prop(owner, prop, text='')
 
 
 def draw_customizable_props(layout, psys, name, same=False, relink=False):
     main_box = layout.box()
+
     if relink:
         prefix = 're'
     else:
         prefix = ''
+
     if not same:
-        same_value_prop = getattr(psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name))
+        same_value_name = 'mol_{}link_{}_samevalue'.format(prefix, name)
+        same_value_prop = getattr(psys.settings, same_value_name)
         draw_prop(
-            main_box, psys.settings, 'mol_{}link_{}_samevalue'.format(prefix, name),
-            'Same Values', boolean=True
+            main_box,
+            psys.settings,
+            same_value_name,
+            'Same Values',
+            boolean=True
         )
     else:
         same_value_prop = True
+
+    prop_mode_name = 'mol_{}link_{}_mode'.format(prefix, name)
     if not same_value_prop:
-        draw_prop(main_box, psys.settings, 'mol_{}link_{}_mode'.format(prefix, name), 'Mode')
+        draw_prop(main_box, psys.settings, prop_mode_name, 'Mode')
         box = main_box.box()
         box.label(text='Compression:')
     else:
         box = main_box
-        draw_prop(box, psys.settings, 'mol_{}link_{}_mode'.format(prefix, name), 'Mode')
-    mode = getattr(psys.settings, 'mol_{}link_{}_mode'.format(prefix, name))
+        draw_prop(box, psys.settings, prop_mode_name, 'Mode')
+
+    mode = getattr(psys.settings, prop_mode_name)
+
     if mode in ('CONSTANT', 'RANDOM'):
-        draw_prop(box, psys.settings, 'mol_{}link_{}'.format(prefix, name), 'Value')
+        prop_name = 'mol_{}link_{}'.format(prefix, name)
+        draw_prop(box, psys.settings, prop_name, 'Value')
         if mode == 'RANDOM':
-            draw_prop(box, psys.settings, 'mol_{}link_{}rand'.format(prefix, name), 'Random')
+            rand_name = prop_name + 'rand'
+            draw_prop(box, psys.settings, rand_name, 'Random')
         if not same_value_prop:
             box = main_box.box()
             box.label(text='Expansion:')
-            draw_prop(box, psys.settings, 'mol_{}link_e{}'.format(prefix, name), 'Value')
+            exp_name = 'mol_{}link_e{}'.format(prefix, name)
+            draw_prop(box, psys.settings, exp_name, 'Value')
             if mode == 'RANDOM':
-                draw_prop(box, psys.settings, 'mol_{}link_e{}rand'.format(prefix, name), 'Random')
+                exp_rand_name = 'mol_{}link_e{}rand'.format(prefix, name)
+                draw_prop(box, psys.settings, exp_rand_name, 'Random')
+
     elif mode == 'TEXTURE':
-        draw_prop(box, psys.settings, 'mol_{}link_{}tex_coeff'.format(prefix, name), 'Coefficient')
+        tex_coef_name = 'mol_{}link_{}tex_coeff'.format(prefix, name)
+        draw_prop(box, psys.settings, tex_coef_name, 'Coefficient')
         row = box.row()
         row.label(text='Texture:')
+        tex_name = 'mol_{}link_{}tex'.format(prefix, name)
         row.prop_search(
-            psys.settings, 'mol_{}link_{}tex'.format(prefix, name),
-            bpy.data, 'textures', text=''
+            psys.settings,
+            tex_name,
+            bpy.data,
+            'textures',
+            text=''
         )
+
         if not same_value_prop:
             box = main_box.box()
             box.label(text='Expansion:')
-            draw_prop(box, psys.settings, 'mol_{}link_e{}tex_coeff'.format(prefix, name), 'Coefficient')
+            exp_coef_name = 'mol_{}link_e{}tex_coeff'.format(prefix, name)
+            draw_prop(box, psys.settings, exp_tex_name, 'Coefficient')
             row = box.row()
             row.label(text='Texture:')
+            exp_tex_name = 'mol_{}link_e{}tex'.format(prefix, name)
             row.prop_search(
-                psys.settings, 'mol_{}link_e{}tex'.format(prefix, name),
-                bpy.data, 'textures', text=''
+                psys.settings,
+                exp_tex_name,
+                bpy.data,
+                'textures',
+                text=''
             )
 
 
@@ -98,26 +126,33 @@ class MolecularDensityPanel(MolecularBasePanel):
             return
         layout.enabled = psys.settings.mol_active
         # for the data    
-        psys_eval = get_object(context, context.object).particle_systems.active
+        psys_eval = utils.get_object(context, context.object).particle_systems.active
 
         draw_prop(
-            layout, psys.settings, 'mol_density_active',
-            'Weight by Density', boolean=True
+            layout,
+            psys.settings,
+            'mol_density_active',
+            'Weight by Density',
+            boolean=True
         )
 
         if not psys.settings.mol_density_active:
             return
 
         draw_prop(layout, psys.settings, 'mol_matter', 'Preset')
+        pmass = (psys.settings.particle_size ** 3) * psys.settings.mol_density
 
-        if int(psys.settings.mol_matter) >= 1:
+        if int(psys.settings.mol_matter) != -1:
+            row = layout.row()
+            row.label(text='Density:') 
+            row.label(text='{0:.2f} Kg'.format(float(psys.settings.mol_matter)))
+
             row = layout.row()
             row.label(text='Total Weight:') 
-            row.label(text='{0:.2} Kg'.format(psys.settings.mol_matter))
+            row.label(text='{0:.2f} Kg'.format(len(psys_eval.particles) * pmass)) 
             return
 
         draw_prop(layout, psys.settings, 'mol_density', 'Density')
-        pmass = (psys.settings.particle_size ** 3) * psys.settings.mol_density
         row = layout.row()
         row.label(text='Total Weight:') 
         row.label(text='{0:.2f} Kg'.format(len(psys_eval.particles) * pmass)) 
@@ -140,7 +175,7 @@ class MolecularCollisionPanel(MolecularBasePanel):
 
         layout.enabled = stg.mol_active
         # for the data    
-        psys_eval = get_object(context, context.object).particle_systems.active
+        psys_eval = utils.get_object(context, context.object).particle_systems.active
         # self collision
         draw_prop(layout, stg, 'mol_selfcollision_active', 'Self', boolean=True)
         # other collision
@@ -168,6 +203,8 @@ class MolecularLinksPanel(MolecularBasePanel):
 
         draw_prop(layout, psys.settings, 'mol_links_active', 'Self', boolean=True)
         draw_prop(layout, psys.settings, 'mol_other_link_active', 'Other', boolean=True)
+        if psys.settings.mol_other_link_active:
+            draw_prop(layout, psys.settings, 'mol_link_group', 'Group')
 
 
 class MolecularInitLinksPanel(MolecularBasePanel):
@@ -188,7 +225,6 @@ class MolecularInitLinksPanel(MolecularBasePanel):
         )
         draw_prop(layout, psys.settings, 'mol_link_rellength', 'Relative', boolean=True)
         draw_prop(layout, psys.settings, 'mol_link_length', 'Search Length')
-        draw_prop(layout, psys.settings, 'mol_link_group', 'Group')
         draw_prop(layout, psys.settings, 'mol_link_max', 'Max links')
 
 
@@ -301,51 +337,6 @@ class MolecularNewLinksPanel(MolecularBasePanel):
         )
         draw_prop(layout, psys.settings, 'mol_relink_group', 'Group')
         draw_prop(layout, psys.settings, 'mol_relink_max', 'Max links')
-
-        '''
-        row = layout.row()
-        row.prop(psys.settings, "mol_relink_group")
-        row = layout.row()
-        row.prop(psys.settings, "mol_relink_chance")
-        row.prop(psys.settings, "mol_relink_chancerand")
-        row = layout.row()
-        row.prop(psys.settings, "mol_relink_max")
-        row = layout.row()
-        layout.separator()
-        row = layout.row()
-        row.prop(psys.settings,"mol_relink_tension")
-        row.prop(psys.settings,"mol_relink_tensionrand")
-        row = layout.row()
-        row.prop(psys.settings, "mol_relink_stiff_samevalue", toggle=True)
-        if not psys.settings.mol_relink_stiff_samevalue:
-            layout.label(text='Compression:')
-        row = layout.row()
-        row.prop(psys.settings,"mol_relink_stiff")
-        row.prop(psys.settings,"mol_relink_stiffrand")
-        #row = layout.row()
-        #row.prop(psys.settings, "mol_relink_stiffexp")
-        row = layout.row()
-        row.prop(psys.settings, "mol_relink_damp")
-        row.prop(psys.settings, "mol_relink_damprand")
-        row = layout.row()
-        row.prop(psys.settings, "mol_relink_broken")
-        row.prop(psys.settings, "mol_relink_brokenrand")
-        row = layout.row()
-        if not psys.settings.mol_relink_stiff_samevalue:
-            layout.label(text='Expansion:')
-            row = layout.row()
-            row.prop(psys.settings, "mol_relink_estiff")
-            row.prop(psys.settings, "mol_relink_estiffrand")
-            #row = layout.row()
-            #row.enabled = not psys.settings.mol_relink_samevalue
-            #row.prop(psys.settings, "mol_relink_estiffexp")
-            row = layout.row()
-            row.prop(psys.settings, "mol_relink_edamp")
-            row.prop(psys.settings, "mol_relink_edamprand")
-            row = layout.row()
-            row.prop(psys.settings, "mol_relink_ebroken")
-            row.prop(psys.settings, "mol_relink_ebrokenrand")
-            '''
 
 
 class MolecularNewLinksLinkingPanel(MolecularBasePanel):
@@ -470,7 +461,7 @@ class MolecularSimulatePanel(MolecularBasePanel):
             return
         layout.enabled = psys.settings.mol_active
         # for the data    
-        psys_eval = get_object(context, context.object).particle_systems.active
+        psys_eval = utils.get_object(context, context.object).particle_systems.active
 
         box = layout.box()
         box.label(text='General:')
@@ -478,12 +469,6 @@ class MolecularSimulatePanel(MolecularBasePanel):
         draw_prop(box, scn, 'mol_use_cache', 'Use Molecular Cache', boolean=True)
         draw_prop(box, scn, 'frame_start', 'Start Frame')
         draw_prop(box, scn, 'frame_end', 'End Frame')
-
-        # row = layout.row()
-        # row.prop(scn,"mol_timescale_active", text="Activate TimeScaling")
-        # row = layout.row()
-        # row.enabled = scn.mol_timescale_active
-        # row.prop(scn, "timescale", text="Time Scale")
 
         draw_prop(box, scn, 'mol_substep', 'Substeps')
         draw_prop(box, scn, 'mol_cpu', names.CPU_USED)
@@ -556,7 +541,7 @@ class MolecularToolsPanel(MolecularBasePanel):
             return
         layout.enabled = psys.settings.mol_active
         # for the data    
-        psys_eval = get_object(context, context.object).particle_systems.active
+        psys_eval = utils.get_object(context, context.object).particle_systems.active
 
         box = layout.box()
         row = box.row()
@@ -633,7 +618,7 @@ class MolecularAboutPanel(MolecularBasePanel):
             return
         layout.enabled = psys.settings.mol_active
         # for the data    
-        psys_eval = get_object(context, context.object).particle_systems.active
+        psys_eval = utils.get_object(context, context.object).particle_systems.active
 
         box = layout.box()
         row = box.row()
@@ -673,7 +658,7 @@ class MolecularDebugPanel(MolecularBasePanel):
             return
         layout.enabled = psys.settings.mol_active
         # for the data    
-        psys_eval = get_object(context, context.object).particle_systems.active
+        psys_eval = utils.get_object(context, context.object).particle_systems.active
 
         draw_prop(
             layout, psys.settings, 'mol_use_debug_par_attr',
@@ -728,3 +713,13 @@ panel_classes = (
     MolecularDebugPanel,
     MolecularAboutPanel
 )
+
+
+def register():
+    for panel in panel_classes:
+        bpy.utils.register_class(panel)
+
+
+def unregister():
+    for panel in reversed(panel_classes):
+        bpy.utils.unregister_class(panel)

@@ -1,7 +1,8 @@
-FLOAT_MIN = -3.402823e+38
-FLOAT_MAX = 3.402823e+38
 INT_MIN = -2 ** 31
 INT_MAX = 2 ** 31 - 1
+
+FLOAT_MIN = -3.402823e+38
+FLOAT_MAX = 3.402823e+38
 
 # property_name: (default_value, minimum, maximum)
 values = {

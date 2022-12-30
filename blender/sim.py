@@ -1,8 +1,11 @@
-import math, struct, os, numpy
+import math
+import struct
+import os
 
 import bpy
+import numpy
 
-from .utils import get_object
+from . import utils
 
 
 def write_debug_data(file_path, data):
@@ -79,7 +82,7 @@ def pack_data(context, initiate):
     parnum = 0
     scene = context.scene
     for ob in bpy.data.objects:
-        obj = get_object(context, ob)
+        obj = utils.get_object(context, ob)
 
         for psys in obj.particle_systems:           
             if psys.settings.mol_matter != "-1":
@@ -111,13 +114,6 @@ def pack_data(context, initiate):
                     else:
                         for par in psys.particles:
                             par_mass.append(psys.settings.mass)
-
-                    """
-                    if scene.mol_timescale_active == True:
-                        psys.settings.timestep = 1 / (scene.render.fps / scene.timescale)
-                    else:
-                        psys.settings.timestep = 1 / scene.render.fps 
-                    """
 
                     psyslen += 1
                     psys.particles.foreach_get('size', par_size)
