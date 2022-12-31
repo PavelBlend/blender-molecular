@@ -80,8 +80,8 @@ def render_init_handler(scene):
 
 
 @bpy.app.handlers.persistent
-def frame_change_pre_handler(scene):
-    if not scene.mol_use_cache:
+def frame_change_post_handler(scene):
+    if not scene.mol.use_cache:
         return
 
     global is_rendering
@@ -89,17 +89,17 @@ def frame_change_pre_handler(scene):
     if is_rendering:
         return
 
-    if scene.mol_simrun:
+    if scene.mol.simrun:
         return
 
-    cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+    cache_folder = bpy.path.abspath(scene.mol.cache_folder)
 
     for obj in bpy.data.objects:
-        obj = utils.get_object(bpy.context, obj)
+        obj = utils.get_object(obj)
 
         for psys in obj.particle_systems:
 
-            if not psys.settings.mol_active:
+            if not psys.settings.mol.active:
                 continue
 
             if psys.point_cache.is_baked:
@@ -117,7 +117,7 @@ def frame_change_pre_handler(scene):
                 loc_values = par_attrs[cache.LOCATION]
                 pars.foreach_set(loc_name, loc_values)
 
-                if not psys.settings.mol_use_debug_par_attr:
+                if not psys.settings.mol.use_debug_par_attr:
                     # set velocity
                     vel_values = par_attrs.get(cache.VELOCITY, None)
                     if not vel_values is None:
@@ -125,7 +125,7 @@ def frame_change_pre_handler(scene):
                         pars.foreach_set(vel_name, vel_values)
 
                 else:
-                    attr_name = psys.settings.mol_debug_par_attr_name
+                    attr_name = psys.settings.mol.debug_par_attr_name
                     attr = debug_attrs[attr_name]
 
                     debug_file_name = '{}_{}{}'.format(
@@ -171,7 +171,7 @@ def frame_change_pre_handler(scene):
 
 
 def register():
-    bpy.app.handlers.frame_change_post.append(frame_change_pre_handler)
+    bpy.app.handlers.frame_change_post.append(frame_change_post_handler)
     bpy.app.handlers.render_init.append(render_init_handler)
     bpy.app.handlers.render_post.append(render_post_handler)
 
@@ -179,4 +179,4 @@ def register():
 def unregister():
     bpy.app.handlers.render_init.remove(render_init_handler)
     bpy.app.handlers.render_post.remove(render_post_handler)
-    bpy.app.handlers.frame_change_post.remove(frame_change_pre_handler)
+    bpy.app.handlers.frame_change_post.remove(frame_change_post_handler)

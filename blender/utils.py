@@ -1,8 +1,8 @@
 import bpy
 
 
-def get_object(context, obj):
-    depsgraph = context.evaluated_depsgraph_get()
+def get_object(obj):
+    depsgraph = bpy.context.evaluated_depsgraph_get()
     return obj.evaluated_get(depsgraph)
 
 
@@ -11,6 +11,6 @@ def destroy_caches(obj):
         # attempt to destroy cache prior to resimulation
         # by provoking an internal RNA update call,
         # this will also update the psys for get_object
-        if psys.settings.mol_active:
+        if psys.settings.mol.active:
             step = psys.point_cache.frame_step
             psys.point_cache.frame_step = step

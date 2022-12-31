@@ -72,7 +72,7 @@ BAKE_UV = 'Bake uv when finished'
 
 TIME_SCALE_ACTIVE = 'Activate TimeScaling'
 TIME_SCALE = 'SpeedUp or Slow down the simulation with this multiplier'
-SUBSTEP = 'mol_substep. Higher is more stable and accurate, but slower'
+SUBSTEP = 'substep. Higher is more stable and accurate, but slower'
 BAKE = 'Bake simulation when finished'
 RENDER = 'Start rendering animation when simulation is finished. WARNING: This will freeze blender until the render is finished.'
 CPU = 'Number of cpu\'s included to process the simulation'

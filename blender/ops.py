@@ -1,6 +1,6 @@
 # standart modules
 import os
-from time import perf_counter as clock, sleep, strftime, gmtime, time
+import time
 
 # blender modules
 import bpy
@@ -22,60 +22,83 @@ class MolSimulate(bpy.types.Operator):
     bl_label = 'Simulate'
 
     def execute(self, context):
-        for ob in bpy.data.objects:
-            utils.destroy_caches(ob)
-
-        print('Molecular Sim Start' + '-' * 50)
-        mol_stime = clock()
         scene = context.scene
-        scene.mol_simrun = True
-        scene.mol_minsize = 1000000000.0
-        scene.mol_newlink = 0
-        scene.mol_deadlink = 0
-        scene.mol_totallink = 0
-        scene.mol_totaldeadlink = 0
-        scene.mol_timeremain = "...Simulating..."
-        scene.frame_set(frame=scene.frame_start)
-        scene.mol_old_endframe = scene.frame_end
-        mol_substep = scene.mol_substep
-        scene.render.frame_map_old = 1
-        scene.render.frame_map_new = mol_substep + 1
-        scene.frame_end *= mol_substep + 1
+        mol = scene.mol
 
-        cache_folder = bpy.path.abspath(scene.mol_cache_folder)
-        if not os.path.exists(cache_folder):
-            os.makedirs(cache_folder)
+        # check cache folder
+        cache_folder = bpy.path.abspath(mol.cache_folder)
+        if cache_folder:
+            if not os.path.exists(cache_folder):
+                os.makedirs(cache_folder)
+        else:
+            self.report({'ERROR'}, 'Cache folder not specified!')
+            return {'CANCELLED'}
+
+        # remove preview baked files
         for file in os.listdir(cache_folder):
             file_path = os.path.join(cache_folder, file)
             if os.path.isfile(file_path):
-                if file.endswith('.bin'):
+                ext = os.path.splitext(file)[-1]
+                if ext in ('.bin', '.npy'):
                     os.remove(file_path)
 
-        if scene.mol_timescale_active == True:
-            fps = scene.render.fps * scene.timescale
+        for ob in bpy.data.objects:
+            utils.destroy_caches(ob)
+
+        print('Molecular Simulation Start' + '-' * 50)
+        stime = time.perf_counter()
+
+        # molecular settings
+        mol.simrun = True
+        mol.minsize = 1000000000.0
+        mol.newlink = 0
+        mol.deadlink = 0
+        mol.totallink = 0
+        mol.totaldeadlink = 0
+        mol.timeremain = "...Simulating..."
+        mol.old_endframe = scene.frame_end
+
+        # scene settings
+        mol_substep = scene.mol.substep
+        steps_per_frame = mol_substep + 1
+
+        scene.frame_set(frame=scene.frame_start)
+        scene.render.frame_map_old = 1
+        scene.render.frame_map_new = steps_per_frame
+        scene.frame_end *= steps_per_frame
+
+        # fps
+        if scene.mol.timescale_active:
+            fps = scene.render.fps * scene.mol.timescale
         else:
             fps = scene.render.fps
 
-        cpu = scene.mol_cpu
-        mol_exportdata = context.scene.mol_exportdata
+        # init export data
+        cpu = scene.mol.cpu
+        mol_exportdata = context.scene.mol.exportdata
         mol_exportdata.clear()
         mol_exportdata.append([
             fps,
             mol_substep,
-            0,
-            0,
+            0,    # particle systems count
+            0,    # particles count
             cpu
         ])
-        mol_stime = clock()
+
+        # pack export data
+        stime = time.perf_counter()
         sim.pack_data(context, True)
-        etime = clock()
-        print("  PackData take " + str(round(etime - mol_stime, 3)) + "sec")
-        mol_stime = clock()
+        etime = time.perf_counter()
+        print("  PackData take {:.3f} sec".format(etime - stime))
+
+        # export
+        stime = time.perf_counter()
         mol_report = core.init(mol_exportdata)
-        etime = clock()
-        print("  Export time take " + str(round(etime - mol_stime, 3)) + "sec")
-        print("  total numbers of particles: " + str(mol_report))
-        print("  start processing:")
+        etime = time.perf_counter()
+        print("  Export time take {:.3f} sec".format(etime - stime))
+
+        print("  Total numbers of particles: {}".format(mol_report))
+        print("  Start processing:")
 
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
@@ -87,7 +110,7 @@ class MolSetGlobalUV(bpy.types.Operator):
 
     def execute(self, context):
         scene = context.scene
-        obj = utils.get_object(context, context.object)
+        obj = utils.get_object(context.object)
 
         psys = obj.particle_systems.active
         coord = numpy.zeros(3 * len(psys.particles), dtype=numpy.float32)
@@ -104,17 +127,30 @@ class MolSetActiveUV(bpy.types.Operator):
     def execute(self, context):
         scene = context.scene
 
-        #dont use rotation data here from cache, only for render mode
+        # don't use rotation data here from cache, only for render mode
         psys_orig = context.object.particle_systems.active
         psys_orig.settings.use_rotations = False
 
-        obj = utils.get_object(context, context.object)
+        obj = utils.get_object(context.object)
 
-        scene.mol_objuvbake = obj.name
-        scene.mol_psysuvbake = obj.particle_systems.active.name
-        psys = obj.particle_systems[scene.mol_psysuvbake]
+        scene.mol.objuvbake = obj.name
+        scene.mol.psysuvbake = obj.particle_systems.active.name
+        psys = obj.particle_systems[scene.mol.psysuvbake]
 
-        if not obj.data.uv_layers.get(psys.settings.mol_uv_name):
+        if not psys.settings.mol.bakeuv:
+            return {'FINISHED'}
+
+        uv_name = psys.settings.mol.uv_name
+
+        if uv_name:
+            if not obj.data.uv_layers.get(uv_name):
+                self.report(
+                    {'ERROR'},
+                    'Can\'not find UV-Map: "{}"'.format(uv_name)
+                )
+                return {'FINISHED'}
+        else:
+            self.report({'ERROR'}, 'UV map not specified!')
             return {'FINISHED'}
 
         print('  start bake uv from:', obj.name)
@@ -142,6 +178,7 @@ class MolSetActiveUV(bpy.types.Operator):
             parloc = (par.location @ obj2.matrix_world) - obj2.location
 
             point = obj2.closest_point_on_mesh(parloc)
+
             vindex1 = me.polygons[point[3]].vertices[0]
             vindex2 = me.polygons[point[3]].vertices[1]
             vindex3 = me.polygons[point[3]].vertices[2]
@@ -150,22 +187,29 @@ class MolSetActiveUV(bpy.types.Operator):
             v2 = (obj2.matrix_world @ me.vertices[vindex2].co).to_tuple()
             v3 = (obj2.matrix_world @ me.vertices[vindex3].co).to_tuple()
 
-            uvindex1 = me.polygons[point[3]].loop_start + 0
+            uvindex1 = me.polygons[point[3]].loop_start
             uvindex2 = me.polygons[point[3]].loop_start + 1
             uvindex3 = me.polygons[point[3]].loop_start + 2
-            uv1 = me.uv_layers[psys.settings.mol_uv_name].data[uvindex1].uv.to_3d()
-            uv2 = me.uv_layers[psys.settings.mol_uv_name].data[uvindex2].uv.to_3d()
-            uv3 = me.uv_layers[psys.settings.mol_uv_name].data[uvindex3].uv.to_3d()
+
+            uv1 = me.uv_layers[uv_name].data[uvindex1].uv.to_3d()
+            uv2 = me.uv_layers[uv_name].data[uvindex2].uv.to_3d()
+            uv3 = me.uv_layers[uv_name].data[uvindex3].uv.to_3d()
 
             p = obj2.matrix_world @ point[1]
 
             v1 = mathutils.Vector(v1)
             v2 = mathutils.Vector(v2)
             v3 = mathutils.Vector(v3)
+
             uv1 = mathutils.Vector(uv1)
             uv2 = mathutils.Vector(uv2)
             uv3 = mathutils.Vector(uv3)
-            newuv = mathutils.geometry.barycentric_transform(p, v1, v2, v3, uv1, uv2, uv3)
+
+            newuv = mathutils.geometry.barycentric_transform(
+                p,
+                v1, v2, v3,
+                uv1, uv2, uv3
+            )
 
             parloc = par.location @ obj2.matrix_world
 
@@ -183,6 +227,7 @@ class MolSetActiveUV(bpy.types.Operator):
         scene.collection.objects.unlink(obj2)
         bpy.data.objects.remove(obj2)
         bpy.data.meshes.remove(obdata)
+
         print('         uv baked on:', psys.settings.name)
         context.object["par_uv"] = par_uv   
 
@@ -216,10 +261,10 @@ class MolSimulateModal(bpy.types.Operator):
     bl_idname = "wm.mol_simulate_modal"
     bl_label = "Simulate Molecular"
     _timer = None
-    
+
     def check_write_uv_cache(self, context):
         for ob in bpy.data.objects:
-            obj = utils.get_object(context, ob)
+            obj = utils.get_object(ob)
 
             for psys in obj.particle_systems:
 
@@ -228,7 +273,7 @@ class MolSimulateModal(bpy.types.Operator):
                     psys.settings.use_rotations = True
                     psys.settings.angular_velocity_mode = 'RAND'
 
-                if psys.settings.mol_bakeuv and "par_uv" in ob:
+                if psys.settings.mol.bakeuv and "par_uv" in ob:
                     par_uv = ob["par_uv"]
                     print("Writing UV data...")
                     for k, par in enumerate(psys.particles):
@@ -240,15 +285,15 @@ class MolSimulateModal(bpy.types.Operator):
         frame_old = scene.frame_current
 
         for ob in bpy.data.objects:
-            obj = utils.get_object(context, ob)
+            obj = utils.get_object(ob)
 
             for psys in obj.particle_systems:
-                if psys.settings.mol_bakeuv:
+                if psys.settings.mol.bakeuv:
                     
-                    scene.mol_objuvbake = obj.name
+                    scene.mol.objuvbake = obj.name
                     context.view_layer.update()
 
-                    scene.frame_set(frame=psys.settings.frame_start)
+                    scene.frame_set(frame=scene.frame_start)
                     context.view_layer.update()
 
                     bpy.ops.object.mol_set_active_uv()
@@ -259,40 +304,40 @@ class MolSimulateModal(bpy.types.Operator):
         scene = context.scene
         frame_end = scene.frame_end
         frame_current = scene.frame_current
-        mol_substep = scene.mol_substep
+        mol_substep = scene.mol.substep
         if event.type == 'ESC' or frame_current == frame_end:
             for ob in bpy.data.objects:
-                obj = utils.get_object(context, ob)
+                obj = utils.get_object(ob)
                 for psys in obj.particle_systems:
-                    if psys.settings.mol_active and len(psys.particles):
+                    if psys.settings.mol.active and len(psys.particles):
                         par_cache = cache.ParticlesIO()
                         par_cache.add_attr(cache.VELOCITY)
                         framesubstep = frame_current / (mol_substep + 1)  
                         name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
-                        cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+                        cache_folder = bpy.path.abspath(scene.mol.cache_folder)
                         file_path = os.path.join(cache_folder, name)
                         if not os.path.exists(cache_folder):
                             os.makedirs(cache_folder)
                         par_cache.write(psys, file_path)
 
             scene.render.frame_map_new = 1
-            scene.frame_end = scene.mol_old_endframe
+            scene.frame_end = scene.mol.old_endframe
             context.view_layer.update()
 
             # self.check_bake_uv(context)
 
-            if frame_current == frame_end and scene.mol_render:
+            if frame_current == frame_end and scene.mol.render:
                 bpy.ops.render.render(animation=True)
 
             scene.frame_set(frame=scene.frame_start)
 
             core.memfree()
-            scene.mol_simrun = False
-            mol_exportdata = scene.mol_exportdata
+            scene.mol.simrun = False
+            mol_exportdata = scene.mol.exportdata
             mol_exportdata.clear()
             print('-' * 50 + 'Molecular Sim end')
             # total time
-            tt = time() - self.st
+            tt = time.time() - self.st
             # total time string
             tt_s = convert_time_to_string(tt)
             self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
@@ -300,8 +345,8 @@ class MolSimulateModal(bpy.types.Operator):
 
         if event.type == 'TIMER':
             if frame_current == scene.frame_start:            
-                scene.mol_stime = clock()
-            mol_exportdata = context.scene.mol_exportdata
+                scene.mol.stime = time.perf_counter()
+            mol_exportdata = context.scene.mol.exportdata
             mol_exportdata.clear()
             sim.pack_data(context, False)
             mol_importdata = core.simulate(mol_exportdata)
@@ -310,16 +355,16 @@ class MolSimulateModal(bpy.types.Operator):
 
             i = 0
             for ob in bpy.data.objects:
-                obj = utils.get_object(context, ob)
+                obj = utils.get_object(ob)
 
                 for psys in obj.particle_systems:
-                    if psys.settings.mol_active and len(psys.particles):
+                    if psys.settings.mol.active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[1][i])
                         if framesubstep == int(framesubstep):
                             par_cache = cache.ParticlesIO()
                             par_cache.add_attr(cache.VELOCITY)
                             name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
-                            cache_folder = bpy.path.abspath(scene.mol_cache_folder)
+                            cache_folder = bpy.path.abspath(scene.mol.cache_folder)
                             file_path = os.path.join(cache_folder, name)
                             if not os.path.exists(cache_folder):
                                 os.makedirs(cache_folder)
@@ -327,39 +372,39 @@ class MolSimulateModal(bpy.types.Operator):
                         i += 1
 
             if framesubstep == int(framesubstep):
-                etime = clock()
+                etime = time.perf_counter()
                 print("    frame " + str(framesubstep + 1) + ":")
-                print("      links created:", scene.mol_newlink)
-                if scene.mol_totallink:
-                    print("      links broked :", scene.mol_deadlink)
-                    print("      total links:", scene.mol_totallink - scene.mol_totaldeadlink ,"/", scene.mol_totallink," (",round((((scene.mol_totallink - scene.mol_totaldeadlink) / scene.mol_totallink) * 100), 2), "%)")
-                print("      Molecular Script: " + str(round(etime - scene.mol_stime, 3)) + " sec")
-                remain = (((etime - scene.mol_stime) * (scene.mol_old_endframe - framesubstep - 1)))
-                days = int(strftime('%d', gmtime(remain))) - 1
-                scene.mol_timeremain = strftime(str(days) + ' days %H hours %M mins %S secs', gmtime(remain))
-                print("      Remaining estimated:", scene.mol_timeremain)
-                scene.mol_newlink = 0
-                scene.mol_deadlink = 0
-                scene.mol_stime = clock()
-                stime2 = clock()
-            scene.mol_newlink += mol_importdata[2]
-            scene.mol_deadlink += mol_importdata[3]
-            scene.mol_totallink = mol_importdata[4]
-            scene.mol_totaldeadlink = mol_importdata[5]
+                print("      links created:", scene.mol.newlink)
+                if scene.mol.totallink:
+                    print("      links broked :", scene.mol.deadlink)
+                    print("      total links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
+                print("      Molecular Script: " + str(round(etime - scene.mol.stime, 3)) + " sec")
+                remain = (((etime - scene.mol.stime) * (scene.mol.old_endframe - framesubstep - 1)))
+                days = int(time.strftime('%d', time.gmtime(remain))) - 1
+                scene.mol.timeremain = time.strftime(str(days) + ' days %H hours %M mins %S secs', time.gmtime(remain))
+                print("      Remaining estimated:", scene.mol.timeremain)
+                scene.mol.newlink = 0
+                scene.mol.deadlink = 0
+                scene.mol.stime = time.perf_counter()
+                stime2 = time.perf_counter()
+            scene.mol.newlink += mol_importdata[2]
+            scene.mol.deadlink += mol_importdata[3]
+            scene.mol.totallink = mol_importdata[4]
+            scene.mol.totaldeadlink = mol_importdata[5]
             
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
             
             if framesubstep == int(framesubstep):
-                etime2 = clock()
+                etime2 = time.perf_counter()
                 print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
-                stime2 = clock()
+                stime2 = time.perf_counter()
 
         return {'PASS_THROUGH'}
 
     def execute(self, context):
         # start time
-        self.st = time()
+        self.st = time.time()
         self.check_bake_uv(context)
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
         context.window_manager.modal_handler_add(self)
@@ -382,9 +427,9 @@ class MolBakeModal(bpy.types.Operator):
         if event.type == 'ESC' or frame_current == frame_end:
             fake_context = context.copy()
             for ob in bpy.data.objects:
-                obj = utils.get_object(context, ob)
+                obj = utils.get_object(ob)
                 for psys in obj.particle_systems:
-                    if psys.settings.mol_active and len(psys.particles):
+                    if psys.settings.mol.active and len(psys.particles):
                         fake_context["point_cache"] = psys.point_cache
                         bpy.ops.ptcache.bake_from_cache(fake_context)
             context.view_layer.update()
@@ -396,9 +441,9 @@ class MolBakeModal(bpy.types.Operator):
 
     def execute(self, context):
         for ob in bpy.data.objects:
-            obj = utils.get_object(context, ob)
+            obj = utils.get_object(ob)
             for psys in obj.particle_systems:
-                if psys.settings.mol_active:
+                if psys.settings.mol.active:
                     base_psys = ob.particle_systems[psys.name]
                     base_psys.settings.use_rotations = True
                     base_psys.settings.rotation_mode = 'NONE'
