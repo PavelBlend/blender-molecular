@@ -253,7 +253,7 @@ cdef void update(mol_data):
                 psys[i].particles[ii].state = mol_data[i][2][ii] + 1
                 if psys[i].links_active == 1:
                     KDTree_rnn_query(kdtree, &psys[i].particles[ii], psys[i].particles[ii].loc, psys[i].particles[ii].sys.link_length)
-                    create_link(psys[i].particles[ii].id, psys[i].link_max, 0)
+                    create_link(psys[i].particles[ii].id, psys[i].link_max, 0, -1)
                     # free(psys[i].particles[ii].neighbours)
                     psys[i].particles[ii].neighboursnum = 0
 

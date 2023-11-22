@@ -24,7 +24,7 @@ cpdef init(importdata):
     totaldeadlinks = 0
     fps = float(importdata[0][0])
     substep = int(importdata[0][1])
-    deltatime = (fps * (substep + 1))
+    deltatime = fps * (substep + 1)
     psysnum = importdata[0][2]
     parnum = importdata[0][3]
     cpunum = importdata[0][4]
@@ -286,7 +286,7 @@ cpdef init(importdata):
                 KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].sys.link_length)
 
     for i in xrange(parnum):
-        create_link(parlist[i].id, parlist[i].sys.link_max, 1)
+        create_link(parlist[i].id, parlist[i].sys.link_max, 1, -1)
         if parlist[i].neighboursnum > 1:
             # free(parlist[i].neighbours)
             parlist[i].neighboursnum = 0
