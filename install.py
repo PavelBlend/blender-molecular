@@ -2,6 +2,7 @@ import os, shutil
 
 
 env_path = 'BLENDER_USER_ADDON_PATH'
+addon_folder = 'blender\\'
 
 
 def install_addon():
@@ -19,14 +20,14 @@ def install_addon():
             extension = extension.lower()
             if extension == '.py':
                 os.remove(os.path.join(molecular_path, file))
-        for file in os.listdir('.'):
+        for file in os.listdir(addon_folder):
             if file == 'setup.py':
                 continue
             module_name, extension = os.path.splitext(file)
             extension = extension.lower()
             if extension == '.py':
                 shutil.copyfile(
-                    file,
+                    os.path.join(addon_folder, file),
                     os.path.join(molecular_path, file)
                 )
         print('\n\n\tAddon installed into:\n\n\t\t{}\n\n'.format(molecular_path))
