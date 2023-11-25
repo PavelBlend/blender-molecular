@@ -2,7 +2,7 @@ import shutil
 from distutils.core import setup, Extension
 
 
-module = Extension('core', sources=['main.c'])
+module = Extension('core', sources=['core\\main.c'])
 
 setup(
     name='Molecular Core',

@@ -26,3 +26,6 @@ To activate the plugins:
 - Go in File > User Preferences > Addons tab
 - In the "Physics" categories, you must find "Molecular"
 - Check it , close the "Blender user preferences" windows and have fun.
+
+Build Source:
+```python setup.py build```
