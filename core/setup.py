@@ -11,6 +11,6 @@ setup(
     ext_modules=[module]
 )
 shutil.copyfile(
-    'D:\\git\\blender-molecular\\core_c\\build\\lib.win-amd64-cpython-310\\core.cp310-win_amd64.pyd',
+    'build\\lib.win-amd64-cpython-310\\core.cp310-win_amd64.pyd',
     'C:\\Users\\Pavel\\AppData\\Roaming\\Blender Foundation\\Blender\\3.4\\scripts\\addons\\molecular\\core.cp310-win_amd64.pyd'
 )
