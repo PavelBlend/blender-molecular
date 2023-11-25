@@ -44,3 +44,4 @@ def install_addon():
 
 
 install_addon()
+input('Press Enter...')
