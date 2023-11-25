@@ -29,3 +29,6 @@ To activate the plugins:
 
 Build Source:
 ```python setup.py build```
+
+Install Addon:
+```python install.py```

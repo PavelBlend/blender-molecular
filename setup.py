@@ -1,47 +1,16 @@
-import os, shutil
+import shutil
+from distutils.core import setup, Extension
 
 
-env_path = 'BLENDER_USER_ADDON_PATH'
+module = Extension('core', sources=['core\\main.c'])
 
-
-def install_addon():
-    addon_path = os.environ.get(env_path, None)
-    if addon_path:
-        if addon_path[:-1] == '/':
-            addon_path = addon_path[:-1]
-        if not addon_path.endswith(os.path.join('scripts', 'addons')):
-            raise BaseException('Incorrect addons path')
-        molecular_path = os.path.join(addon_path, 'molecular')
-        if not os.path.exists(molecular_path):
-            os.makedirs(molecular_path)
-        for file in os.listdir(molecular_path):
-            module_name, extension = os.path.splitext(file)
-            extension = extension.lower()
-            if extension == '.py':
-                os.remove(os.path.join(molecular_path, file))
-        for file in os.listdir('.'):
-            if file == 'setup.py':
-                continue
-            module_name, extension = os.path.splitext(file)
-            extension = extension.lower()
-            if extension == '.py':
-                shutil.copyfile(
-                    file,
-                    os.path.join(molecular_path, file)
-                )
-        print('\n\n\tAddon installed into:\n\n\t\t{}\n\n'.format(molecular_path))
-
-    else:
-        print('\n' * 4)
-        print('\tWarning:\n\n')
-        print('\t\tMolecular addon is not installed in Blender addons.')
-        print('\t\tAdd an {} environment variable.'.format(env_path))
-        example_addon_path = 'C:\\Users\\Admin\\AppData\\Roaming\\Blender Foundation\\Blender\\2.90\\scripts\\addons\\'
-        print('\t\tFor example:')
-        print('\t\t\t{}'.format(example_addon_path))
-        print('\t\tOr copy the Molecular addon files manually.')
-        print('\n' * 4)
-
-
-install_addon()
-input('Press Enter...')
+setup(
+    name='Molecular Core',
+    version='1.0',
+    description='This is a core for molecular addon',
+    ext_modules=[module]
+)
+shutil.copyfile(
+    'build\\lib.win-amd64-cpython-310\\core.cp310-win_amd64.pyd',
+    'C:\\Users\\Pavel\\AppData\\Roaming\\Blender Foundation\\Blender\\3.4\\scripts\\addons\\molecular\\core.cp310-win_amd64.pyd'
+)
