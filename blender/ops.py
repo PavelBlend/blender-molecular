@@ -94,6 +94,7 @@ class MolSimulate(bpy.types.Operator):
         # export
         stime = time.perf_counter()
         mol_report = core.init(mol_exportdata)
+
         etime = time.perf_counter()
         print("  Export time take {:.3f} sec".format(etime - stime))
 
@@ -331,7 +332,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             scene.frame_set(frame=scene.frame_start)
 
-            core.memfree()
+            '''core.memfree()'''
             scene.mol.simrun = False
             mol_exportdata = scene.mol.exportdata
             mol_exportdata.clear()
@@ -349,6 +350,7 @@ class MolSimulateModal(bpy.types.Operator):
             mol_exportdata = context.scene.mol.exportdata
             mol_exportdata.clear()
             sim.pack_data(context, False)
+
             mol_importdata = core.simulate(mol_exportdata)
 
             framesubstep = frame_current / (mol_substep + 1)   

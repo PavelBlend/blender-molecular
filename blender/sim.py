@@ -3,7 +3,6 @@ import struct
 import os
 
 import bpy
-import numpy
 
 from . import utils
 
@@ -89,9 +88,9 @@ def pack_data(context, initiate):
                 psys.settings.mol.density = float(psys.settings.mol.matter)
             if psys.settings.mol.active and len(psys.particles):
                 parlen = len(psys.particles)
-                par_loc = numpy.zeros(parlen * 3, dtype=numpy.float32)
-                par_vel = numpy.zeros(parlen * 3, dtype=numpy.float32)
-                par_size = numpy.zeros(parlen, dtype=numpy.float32)
+                par_loc = [0.0, ] * (parlen * 3)
+                par_vel = [0.0, ] * (parlen * 3)
+                par_size = [0.0, ] * parlen
                 par_alive = []
                 for par in psys.particles:
                     parnum += 1
@@ -259,12 +258,16 @@ def pack_data(context, initiate):
                     pack_tex_data(psys, 'chance', 're', index, (), params, par_loc, exp=False)
                     index += 2
 
+                    for index, param in enumerate(params):
+                        if type(param) == bool:
+                            params[index] = int(param)
+
                 mol_exportdata = bpy.context.scene.mol.exportdata
 
                 if initiate:
                     mol_exportdata[0][2] = psyslen
                     mol_exportdata[0][3] = parnum
-                    mol_exportdata.append((
+                    mol_exportdata.append([
                         parlen,
                         par_loc,
                         par_vel,
@@ -272,7 +275,7 @@ def pack_data(context, initiate):
                         par_mass,
                         par_alive,
                         params
-                    ))
+                    ])
 
                 else:
-                    mol_exportdata.append((par_loc, par_vel, par_alive))
+                    mol_exportdata.append([par_loc, par_vel, par_alive])
