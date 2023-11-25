@@ -38,7 +38,6 @@ void update(PyObject *mol_data) {
                 psys[i].particles[ii].state = par_state;
             }
 
-
             psys[i].particles[ii].collided_with = (int*) realloc(psys[i].particles[ii].collided_with, sizeof(int));
             psys[i].particles[ii].collided_num = 0;
         }

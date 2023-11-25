@@ -306,17 +306,14 @@ static PyObject* init(PyObject *self, PyObject *args) {
             parlist[jj].loc[0] = (float)PyFloat_AsDouble(PyList_GetItem(location, ii*3));
             parlist[jj].loc[1] = (float)PyFloat_AsDouble(PyList_GetItem(location, ii*3 + 1));
             parlist[jj].loc[2] = (float)PyFloat_AsDouble(PyList_GetItem(location, ii*3 + 2));
-            //printf("loc = %.3f, %.3f, %.3f \n", parlist[jj].loc[0], parlist[jj].loc[1], parlist[jj].loc[2]);
 
             parlist[jj].vel[0] = (float)PyFloat_AsDouble(PyList_GetItem(velocity, ii*3));
             parlist[jj].vel[1] = (float)PyFloat_AsDouble(PyList_GetItem(velocity, ii*3 + 1));
             parlist[jj].vel[2] = (float)PyFloat_AsDouble(PyList_GetItem(velocity, ii*3 + 2));
-            //printf("vel = %.3f, %.3f, %.3f \n", parlist[jj].vel[0], parlist[jj].vel[1], parlist[jj].vel[2]);
 
             parlist[jj].size  = (float) PyFloat_AsDouble(PyList_GetItem(size,  ii));
             parlist[jj].mass  = (float) PyFloat_AsDouble(PyList_GetItem(mass,  ii));
             parlist[jj].state = (char)  PyLong_AsLong   (PyList_GetItem(state, ii));
-            //printf("size mass state = %.3f, %.3f, %d \n\n", parlist[jj].size, parlist[jj].mass, parlist[jj].state);
 
             parlist[jj].sys = &psys[i];
             parlist[jj].collided_with = (int*) malloc(sizeof(int));

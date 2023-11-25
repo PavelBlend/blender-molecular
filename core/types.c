@@ -9,7 +9,6 @@ typedef struct Parity Parity;
 typedef struct Heap Heap;
 
 
-
 struct SParticle {
     int id;
     float loc[3];
