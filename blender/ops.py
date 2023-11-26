@@ -332,7 +332,7 @@ class MolSimulateModal(bpy.types.Operator):
 
             scene.frame_set(frame=scene.frame_start)
 
-            '''core.memfree()'''
+            core.memfree()
             scene.mol.simrun = False
             mol_exportdata = scene.mol.exportdata
             mol_exportdata.clear()

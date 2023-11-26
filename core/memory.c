@@ -1,4 +1,4 @@
-void memfree() {
+static PyObject* memfree(PyObject *self, PyObject *args) {
     int i = 0;
 
     fps = 0;
@@ -8,6 +8,7 @@ void memfree() {
     newlinks = 0;
     totallinks = 0;
     totaldeadlinks = 0;
+
     free(deadlinks);
     deadlinks = NULL;
 
@@ -100,4 +101,6 @@ void memfree() {
 
     free(kdtree);
     kdtree = NULL;
+
+    return PyLong_FromLong(0);    /* 0 - no errors */
 }
