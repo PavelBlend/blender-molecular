@@ -47,8 +47,6 @@ def define_customizable_props_values(
 
     setattr(mol, value_prop_name, value_prop)
 
-
-
     # random property
 
     value_random_prop_name = '{}_{}rand'.format(base, name)
@@ -60,28 +58,11 @@ def define_customizable_props_values(
         min=minimum,
         max=maximum,
         default=default,
-        precision=6, subtype='FACTOR'
+        precision=6,
+        subtype='FACTOR'
     )
 
     setattr(mol, value_random_prop_name, value_random_prop)
-
-
-
-    # texture property
-
-    tex_coeff_prop_name = '{}_{}tex_coeff'.format(base, name)
-    default, minimum, maximum = defs.values[tex_coeff_prop_name]
-
-    tex_coeff_prop = bpy.props.FloatProperty(
-        name="Multiply Coefficient",
-        default=default,
-        min=minimum,
-        max=maximum
-    )
-
-    setattr(mol, tex_coeff_prop_name, tex_coeff_prop)
-    tex_prop = bpy.props.StringProperty(name='Broken Texture')
-    setattr(mol, '{}_{}tex'.format(base, name), tex_prop)
 
 
 def define_customizable_props(
@@ -94,12 +75,6 @@ def define_customizable_props(
         text=None
     ):
 
-    mode_items = [
-        ('CONSTANT', 'Constant', ''),
-        ('RANDOM', 'Random', ''),
-        ('TEXTURE', 'Texture', '')
-    ]
-
     if text:
         label = text
     else:
@@ -108,14 +83,6 @@ def define_customizable_props(
     prefix = ''
     if relink:
         prefix = 're'
-
-    mode_prop = bpy.props.EnumProperty(
-        name='{} Mode'.format(label),
-        items=mode_items,
-        default='CONSTANT'
-    )
-
-    setattr(mol, '{}link_{}_mode'.format(prefix, name), mode_prop)
 
     define_customizable_props_values(
         mol,
@@ -364,36 +331,6 @@ def define_uv_props(mol):
     mol.uv_name = bpy.props.StringProperty(name='UV Name')
 
 
-def define_debug_props(mol):
-    # debug particle attribute
-    mol.use_debug_par_attr = bpy.props.BoolProperty(default=False)
-    items = (
-        # link
-        ('LINK_FRICTION', 'Link Friction', ''),
-        ('LINK_TENSION', 'Link Tension', ''),
-        ('LINK_STIFFNESS', 'Link C-Stiffness', ''),
-        ('LINK_ESTIFFNESS', 'Link E-Stiffness', ''),
-        ('LINK_DAMPING', 'Link C-Damping', ''),
-        ('LINK_EDAMPING', 'Link E-Damping', ''),
-        ('LINK_BROKEN', 'Link C-Broken', ''),
-        ('LINK_EBROKEN', 'Link E-Broken', ''),
-        # relink
-        ('RELINK_FRICTION', 'Relink Friction', ''),
-        ('RELINK_TENSION', 'Relink Tension', ''),
-        ('RELINK_STIFFNESS', 'Relink C-Stiffness', ''),
-        ('RELINK_ESTIFFNESS', 'Relink E-Stiffness', ''),
-        ('RELINK_DAMPING', 'Relink C-Damping', ''),
-        ('RELINK_EDAMPING', 'Relink E-Damping', ''),
-        ('RELINK_BROKEN', 'Relink C-Broken', ''),
-        ('RELINK_EBROKEN', 'Relink E-Broken', ''),
-        ('RELINK_LINKING', 'Relink Linking', '')
-    )
-    mol.debug_par_attr_name = bpy.props.EnumProperty(
-        items=items,
-        name='Attribute Name'
-    )
-
-
 class MolScnProps(bpy.types.PropertyGroup):
     # molecular scene properties
     pass
@@ -472,7 +409,6 @@ def define_pars_props():
     define_links_props(MolParsProps)
     define_tools_props(MolParsProps)
     define_uv_props(MolParsProps)
-    define_debug_props(MolParsProps)
 
     pointer = bpy.props.PointerProperty(type=MolParsProps)
     bpy.types.ParticleSettings.mol = pointer

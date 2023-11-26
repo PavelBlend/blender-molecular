@@ -44,61 +44,26 @@ def draw_customizable_props(layout, psys, name, same=False, relink=False):
     else:
         same_value_prop = True
 
-    prop_mode_name = '{}link_{}_mode'.format(prefix, name)
     if not same_value_prop:
-        draw_prop(main_box, psys.settings.mol, prop_mode_name, 'Mode')
         box = main_box.box()
         box.label(text='Compression:')
     else:
         box = main_box
-        draw_prop(box, psys.settings.mol, prop_mode_name, 'Mode')
 
-    mode = getattr(psys.settings.mol, prop_mode_name)
+    prop_name = '{}link_{}'.format(prefix, name)
+    draw_prop(box, psys.settings.mol, prop_name, 'Value')
 
-    if mode in ('CONSTANT', 'RANDOM'):
-        prop_name = '{}link_{}'.format(prefix, name)
-        draw_prop(box, psys.settings.mol, prop_name, 'Value')
-        if mode == 'RANDOM':
-            rand_name = prop_name + 'rand'
-            draw_prop(box, psys.settings.mol, rand_name, 'Random')
-        if not same_value_prop:
-            box = main_box.box()
-            box.label(text='Expansion:')
-            exp_name = '{}link_e{}'.format(prefix, name)
-            draw_prop(box, psys.settings.mol, exp_name, 'Value')
-            if mode == 'RANDOM':
-                exp_rand_name = '{}link_e{}rand'.format(prefix, name)
-                draw_prop(box, psys.settings.mol, exp_rand_name, 'Random')
+    rand_name = prop_name + 'rand'
+    draw_prop(box, psys.settings.mol, rand_name, 'Random')
 
-    elif mode == 'TEXTURE':
-        tex_coef_name = '{}link_{}tex_coeff'.format(prefix, name)
-        draw_prop(box, psys.settings.mol, tex_coef_name, 'Coefficient')
-        row = box.row()
-        row.label(text='Texture:')
-        tex_name = '{}link_{}tex'.format(prefix, name)
-        row.prop_search(
-            psys.settings.mol,
-            tex_name,
-            bpy.data,
-            'textures',
-            text=''
-        )
+    if not same_value_prop:
+        box = main_box.box()
+        box.label(text='Expansion:')
+        exp_name = '{}link_e{}'.format(prefix, name)
+        draw_prop(box, psys.settings.mol, exp_name, 'Value')
 
-        if not same_value_prop:
-            box = main_box.box()
-            box.label(text='Expansion:')
-            exp_coef_name = '{}link_e{}tex_coeff'.format(prefix, name)
-            draw_prop(box, psys.settings.mol, exp_coef_name, 'Coefficient')
-            row = box.row()
-            row.label(text='Texture:')
-            exp_tex_name = '{}link_e{}tex'.format(prefix, name)
-            row.prop_search(
-                psys.settings.mol,
-                exp_tex_name,
-                bpy.data,
-                'textures',
-                text=''
-            )
+        exp_rand_name = '{}link_e{}rand'.format(prefix, name)
+        draw_prop(box, psys.settings.mol, exp_rand_name, 'Random')
 
 
 class MolecularBasePanel(bpy.types.Panel):
@@ -660,30 +625,6 @@ class MolecularAboutPanel(MolecularBasePanel):
         row.label(text=names.SITE)
 
 
-class MolecularDebugPanel(MolecularBasePanel):
-    bl_label = 'Degug'
-    bl_idname = "OBJECT_PT_molecular_debug"
-    bl_parent_id = 'OBJECT_PT_molecular'
-
-    def draw(self, context):
-        layout = self.layout
-        scn = bpy.context.scene
-        obj = context.object
-        psys = obj.particle_systems.active
-        if psys is None:
-            return
-        layout.enabled = psys.settings.mol.active
-        # for the data    
-        psys_eval = utils.get_object(context.object).particle_systems.active
-
-        draw_prop(
-            layout, psys.settings.mol, 'use_debug_par_attr',
-            'Debug Particles', boolean=True
-        )
-        if psys.settings.mol.use_debug_par_attr:
-            draw_prop(layout, psys.settings.mol, 'debug_par_attr_name', 'Attribute')
-
-
 class MolecularPanel(MolecularBasePanel):
     """Creates a Panel in the Object properties window"""
     bl_label = "Molecular"
@@ -726,7 +667,6 @@ panel_classes = (
         MolecularNewLinksDampingPanel,
         MolecularNewLinksBrokenPanel,
     MolecularToolsPanel,
-    MolecularDebugPanel,
     MolecularAboutPanel
 )
 

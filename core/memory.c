@@ -102,5 +102,5 @@ static PyObject* memfree(PyObject *self, PyObject *args) {
     free(kdtree);
     kdtree = NULL;
 
-    return PyLong_FromLong(0);    /* 0 - no errors */
+    return PyLong_FromLong(0);
 }

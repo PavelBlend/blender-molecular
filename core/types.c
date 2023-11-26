@@ -101,23 +101,6 @@ struct ParSys {
     int relink_max;
     int link_group;
     int other_link_active;
-    int use_link_tension_tex;
-    int use_link_friction_tex;
-    int use_link_stiff_tex;
-    int use_link_estiff_tex;
-    int use_link_damp_tex;
-    int use_link_edamp_tex;
-    int use_link_broken_tex;
-    int use_link_ebroken_tex;
-    int use_relink_tension_tex;
-    int use_relink_friction_tex;
-    int use_relink_stiff_tex;
-    int use_relink_estiff_tex;
-    int use_relink_damp_tex;
-    int use_relink_edamp_tex;
-    int use_relink_broken_tex;
-    int use_relink_ebroken_tex;
-    int use_relink_chance_tex;
 
     float friction;
     float collision_damp;
@@ -158,24 +141,6 @@ struct ParSys {
     float relink_ebrokenrand;
     float link_friction;
     float link_frictionrand;
-
-    float *link_tension_tex;
-    float *link_friction_tex;
-    float *link_stiff_tex;
-    float *link_estiff_tex;
-    float *link_damp_tex;
-    float *link_edamp_tex;
-    float *link_broken_tex;
-    float *link_ebroken_tex;
-    float *relink_tension_tex;
-    float *relink_friction_tex;
-    float *relink_stiff_tex;
-    float *relink_estiff_tex;
-    float *relink_damp_tex;
-    float *relink_edamp_tex;
-    float *relink_broken_tex;
-    float *relink_ebroken_tex;
-    float *relink_chance_tex;
 
     Particle *particles;
 };
