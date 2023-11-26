@@ -199,26 +199,16 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     PyObject *exportdata = PyList_New(0);
-    PyObject *parloc = PyList_New(0);
     PyObject *parvel = PyList_New(0);
 
     for (i=0; i<psysnum; i++) {
-        PyObject *parloctmp = PyList_New(0);
         PyObject *parveltmp = PyList_New(0);
 
         for (ii=0; ii<psys[i].parnum; ii++) {
 
-            PyObject *loc_x = Py_BuildValue("f", psys[i].particles[ii].loc[0]);
-            PyObject *loc_y = Py_BuildValue("f", psys[i].particles[ii].loc[1]);
-            PyObject *loc_z = Py_BuildValue("f", psys[i].particles[ii].loc[2]);
-
             PyObject *vel_x = Py_BuildValue("f", psys[i].particles[ii].vel[0]);
             PyObject *vel_y = Py_BuildValue("f", psys[i].particles[ii].vel[1]);
             PyObject *vel_z = Py_BuildValue("f", psys[i].particles[ii].vel[2]);
-
-            PyList_Append(parloctmp, loc_x);
-            PyList_Append(parloctmp, loc_y);
-            PyList_Append(parloctmp, loc_z);
 
             PyList_Append(parveltmp, vel_x);
             PyList_Append(parveltmp, vel_y);
@@ -226,7 +216,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
         }
 
-        PyList_Append(parloc, parloctmp);
         PyList_Append(parvel, parveltmp);
     }
 
@@ -239,7 +228,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     totaldeadlinks += pydeadlinks;
 
-    PyList_Append(exportdata, parloc);
     PyList_Append(exportdata, parvel);
     PyList_Append(exportdata, Py_BuildValue("i", newlinks));
     PyList_Append(exportdata, Py_BuildValue("i", pydeadlinks));

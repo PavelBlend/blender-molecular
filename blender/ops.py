@@ -362,7 +362,7 @@ class MolSimulateModal(bpy.types.Operator):
 
                 for psys in obj.particle_systems:
                     if psys.settings.mol.active and len(psys.particles):
-                        psys.particles.foreach_set('velocity', mol_importdata[1][i])
+                        psys.particles.foreach_set('velocity', mol_importdata[0][i])
                         if framesubstep == int(framesubstep):
                             par_cache = cache.ParticlesIO()
                             par_cache.add_attr(cache.VELOCITY)
@@ -390,10 +390,10 @@ class MolSimulateModal(bpy.types.Operator):
                 scene.mol.deadlink = 0
                 scene.mol.stime = time.perf_counter()
                 stime2 = time.perf_counter()
-            scene.mol.newlink += mol_importdata[2]
-            scene.mol.deadlink += mol_importdata[3]
-            scene.mol.totallink = mol_importdata[4]
-            scene.mol.totaldeadlink = mol_importdata[5]
+            scene.mol.newlink += mol_importdata[1]
+            scene.mol.deadlink += mol_importdata[2]
+            scene.mol.totallink = mol_importdata[3]
+            scene.mol.totaldeadlink = mol_importdata[4]
             
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
