@@ -207,6 +207,11 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
 
     free(fakepar);
     free(link);
+
+    if (parothers_id != -1) {
+        free(neighbours);
+    }
+
     return;
 }
 
