@@ -342,6 +342,7 @@ class MolSimulateModal(bpy.types.Operator):
             # total time string
             tt_s = convert_time_to_string(tt)
             self.report({'INFO'}, 'Total time: {0}'.format(tt_s))
+            print('Total time: {0}'.format(tt_s))
             return self.cancel(context)
 
         if event.type == 'TIMER':
