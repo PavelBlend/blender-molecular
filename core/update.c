@@ -10,6 +10,7 @@ void update(PyObject *mol_data) {
         PyObject* velocity = PyList_GetItem(psys_props, 1);
         PyObject* state = PyList_GetItem(psys_props, 2);
 
+        #pragma omp parallel for
         for (ii=0; ii<psys[i].parnum; ii++) {
 
             psys[i].particles[ii].loc[0] = (float)PyFloat_AsDouble(PyList_GetItem(location, ii*3));
