@@ -6,6 +6,8 @@
 #include <limits.h>
 #include <stdlib.h>
 
+#include "omp.h"
+
 #include "types.c"
 #include "global.c"
 #include "utils.c"
