@@ -37,6 +37,8 @@ static PyObject* init(PyObject *self, PyObject *args) {
     parnum = PyLong_AsLongLong(PyList_GetItem(sim_settings, 3));
     cpunum = PyLong_AsLongLong(PyList_GetItem(sim_settings, 4));
 
+    omp_set_num_threads(cpunum);
+
     deltatime = fps * (float)(substep + 1);
 
     psys = (ParSys*) malloc(psysnum * sizeof(ParSys));
