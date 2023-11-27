@@ -360,6 +360,8 @@ class MolSimulateModal(bpy.types.Operator):
 
         if event.type == 'TIMER':
 
+            step_start = time.time()
+
             print('-'*79)
             print('Step: {}'.format(self.step))
             self.step += 1
@@ -441,6 +443,9 @@ class MolSimulateModal(bpy.types.Operator):
                 print("        Blender Frame Set: " + str(round(etime2 - stime2, 3)) + " sec")
                 stime2 = time.time()
                 print()
+
+            step_end = time.time()
+            print("Step Time: {:.3f} sec".format(step_end - step_start))
 
         return {'PASS_THROUGH'}
 
