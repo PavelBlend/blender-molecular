@@ -33,10 +33,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     parPool[0].max = 0;
 
     newlinks = 0;
-
-    for (i=0; i<cpunum; i++) {
-        deadlinks[i] = 0;
-    }
+    deadlinks = 0;
 
     if (profiling == 1) {
         printf("-->start simulate\n");
@@ -119,8 +116,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         parPool[0].max = maxZ + parPool[0].offset;
     }
 
-    if (parPool[0].max / (cpunum*10) > maxSize) {
-        maxSize = parPool[0].max / (cpunum*10);
+    if (parPool[0].max / 10 > maxSize) {
+        maxSize = parPool[0].max / 10;
     }
 
     int pair;
@@ -159,7 +156,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
 
-    #pragma omp parallel for
+    omp_set_num_threads(cpunum);
+    #pragma omp parallel for schedule(dynamic, 10)
     for (i=0; i<kdtree->thread_index; i++) {
         KDTree_create_tree(kdtree, parlistcopy, kdtree->thread_start[i], kdtree->thread_end[i], kdtree->thread_name[i], kdtree->thread_parent[i], kdtree->thread_depth[i], 0);
     }
@@ -169,7 +167,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         stime = clock();
     }
 
-    #pragma omp parallel for
+    omp_set_num_threads(cpunum);
+    #pragma omp parallel for schedule(dynamic, 10)
     for (i=0; i<parnum; i++) {
         KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].size * 2);
     }
@@ -181,7 +180,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     for (pair=0; pair<2; pair++) {
 
-        #pragma omp parallel for
+        omp_set_num_threads(cpunum);
+        #pragma omp parallel for schedule(dynamic, 1)
         for (heaps=0; heaps<(int)(parPool[0].max * scale) + 1; heaps++) {
 
             for (i=0; i<parPool[0].parity[pair].heap[heaps].parnum; i++) {
@@ -225,10 +225,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     totallinks += newlinks;
     int pydeadlinks = 0;
 
-    for (i=0; i<cpunum; i++) {
-        pydeadlinks += deadlinks[i];
-    }
-
+    pydeadlinks += deadlinks;
     totaldeadlinks += pydeadlinks;
 
     PyList_Append(exportdata, parvel);

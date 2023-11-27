@@ -372,7 +372,7 @@ void solve_link(Particle *par) {
 
                     par->links[i].start = -1;
                     par->links_activnum -= 1;
-                    deadlinks[0] += 1;    // 0 - threadid()
+                    deadlinks += 1;
 
                     parsearch = arraysearch(par2->id, par->link_with, par->link_withnum);
 

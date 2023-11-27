@@ -8,9 +8,7 @@ static PyObject* memfree(PyObject *self, PyObject *args) {
     newlinks = 0;
     totallinks = 0;
     totaldeadlinks = 0;
-
-    free(deadlinks);
-    deadlinks = NULL;
+    deadlinks = 0;
 
     for (i=0; i<parnum; i++) {
         if (parnum >= 1) {

@@ -1,8 +1,13 @@
 import shutil
-from distutils.core import setup, Extension
+from distutils.core import setup
+from distutils.extension import Extension
 
 
-module = Extension('core', sources=['core\\main.c'])
+module = Extension(
+    'core',
+    sources=['core\\main.c'],
+    extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast']
+)
 
 setup(
     name='Molecular Core',
