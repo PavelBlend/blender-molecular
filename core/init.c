@@ -152,8 +152,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
     kdtree = (KDTree*) malloc(sizeof(KDTree));
     KDTree_create_nodes(kdtree, parnum);
 
-    omp_set_num_threads(cpunum);
-    #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel for
     for (i=0; i<parnum; i++) {
         parlistcopy[i].id = parlist[i].id;
         parlistcopy[i].loc[0] = parlist[i].loc[0];
@@ -163,8 +162,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
 
-    omp_set_num_threads(cpunum);
-    #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel
     for (i=0; i<kdtree->thread_index; i++) {
         KDTree_create_tree(
             kdtree,
@@ -178,8 +176,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
         );
     }
 
-    omp_set_num_threads(cpunum);
-    #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel for
     for (i=0; i<parnum; i++) {
         if (parlist[i].sys->links_active == 1) {
             KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].sys->link_length);

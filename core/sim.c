@@ -156,8 +156,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
 
-    omp_set_num_threads(cpunum);
-    #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel for
     for (i=0; i<kdtree->thread_index; i++) {
         KDTree_create_tree(kdtree, parlistcopy, kdtree->thread_start[i], kdtree->thread_end[i], kdtree->thread_name[i], kdtree->thread_parent[i], kdtree->thread_depth[i], 0);
     }
@@ -167,8 +166,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         stime = clock();
     }
 
-    omp_set_num_threads(cpunum);
-    #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel for
     for (i=0; i<parnum; i++) {
         KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].size * 2);
     }
@@ -180,10 +178,9 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     for (pair=0; pair<2; pair++) {
 
-        omp_set_num_threads(cpunum);
-        #pragma omp parallel for schedule(dynamic, 1)
         for (heaps=0; heaps<(int)(parPool[0].max * scale) + 1; heaps++) {
 
+            #pragma omp parallel for
             for (i=0; i<parPool[0].parity[pair].heap[heaps].parnum; i++) {
 
                 collide(&parlist[parPool[0].parity[pair].heap[heaps].par[i]]);
