@@ -417,18 +417,19 @@ class MolSimulateModal(bpy.types.Operator):
             if framesubstep == int(framesubstep):
                 etime = time.time()
                 print("    Frame {}:".format(framesubstep + 1))
-                print("        Links Created:", scene.mol.newlink)
+                print("    Links Created:", scene.mol.newlink)
                 if scene.mol.totallink:
-                    print("        Links Broked:", scene.mol.deadlink)
-                    print("        Total Links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
+                    print("    Links Broked:", scene.mol.deadlink)
+                    print("    Total Links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
                 remain = (((etime - scene.mol.stime) * (scene.mol.old_endframe - framesubstep - 1)))
                 days = int(time.strftime('%d', time.gmtime(remain))) - 1
                 scene.mol.timeremain = time.strftime(str(days) + ' days %H hours %M mins %S secs', time.gmtime(remain))
-                print("        Remaining Estimated:", scene.mol.timeremain)
+                print("    Remaining Estimated:", scene.mol.timeremain)
                 scene.mol.newlink = 0
                 scene.mol.deadlink = 0
                 scene.mol.stime = time.time()
-                stime2 = time.time()
+
+            stime2 = time.time()
 
             scene.mol.newlink += mol_importdata[1]
             scene.mol.deadlink += mol_importdata[2]
@@ -438,11 +439,9 @@ class MolSimulateModal(bpy.types.Operator):
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
 
-            if framesubstep == int(framesubstep):
-                etime2 = time.time()
-                print("        Blender Frame Set: " + str(round(etime2 - stime2, 3)) + " sec")
-                stime2 = time.time()
-                print()
+            etime2 = time.time()
+            print("    Blender Frame Set: {:.3f} sec".format(etime2 - stime2))
+            print()
 
             step_end = time.time()
             print("Step Time: {:.3f} sec".format(step_end - step_start))
