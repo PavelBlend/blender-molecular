@@ -22,6 +22,11 @@ class MolSimulate(bpy.types.Operator):
     bl_label = 'Simulate'
 
     def execute(self, context):
+        print('-' * 79)
+        print('Molecular Simulation Start')
+
+        stime = time.time()
+
         scene = context.scene
         mol = scene.mol
 
@@ -45,8 +50,10 @@ class MolSimulate(bpy.types.Operator):
         for ob in bpy.data.objects:
             utils.destroy_caches(ob)
 
-        print('Molecular Simulation Start' + '-' * 50)
-        stime = time.perf_counter()
+        etime = time.time()
+        print("    Remove Preview Bake Files: {:.3f} sec".format(etime - stime))
+
+        stime = time.time()
 
         # molecular settings
         mol.simrun = True
@@ -85,21 +92,26 @@ class MolSimulate(bpy.types.Operator):
             cpu
         ])
 
+        etime = time.time()
+        print("    Init Settings: {:.3f} sec".format(etime - stime))
+
         # pack export data
-        stime = time.perf_counter()
+        stime = time.time()
+
         sim.pack_data(context, True)
-        etime = time.perf_counter()
-        print("  PackData take {:.3f} sec".format(etime - stime))
+
+        etime = time.time()
+        print("    Pack Data: {:.3f} sec".format(etime - stime))
 
         # export
-        stime = time.perf_counter()
+        stime = time.time()
         mol_report = core.init(mol_exportdata)
 
-        etime = time.perf_counter()
-        print("  Export time take {:.3f} sec".format(etime - stime))
+        etime = time.time()
+        print("    Init Core: {:.3f} sec".format(etime - stime))
 
-        print("  Total numbers of particles: {}".format(mol_report))
-        print("  Start processing:")
+        print("    Total Numbers of Particles: {}".format(mol_report))
+        print("    Start processing:")
 
         bpy.ops.wm.mol_simulate_modal()
         return {'FINISHED'}
@@ -306,6 +318,7 @@ class MolSimulateModal(bpy.types.Operator):
         frame_end = scene.frame_end
         frame_current = scene.frame_current
         mol_substep = scene.mol.substep
+
         if event.type == 'ESC' or frame_current == frame_end:
             for ob in bpy.data.objects:
                 obj = utils.get_object(ob)
@@ -346,13 +359,35 @@ class MolSimulateModal(bpy.types.Operator):
             return self.cancel(context)
 
         if event.type == 'TIMER':
-            if frame_current == scene.frame_start:            
-                scene.mol.stime = time.perf_counter()
+
+            print('-'*79)
+            print('Step: {}'.format(self.step))
+            self.step += 1
+
+            if frame_current == scene.frame_start:
+                scene.mol.stime = time.time()
+
+            # pack data
+            stime = time.time()
+
             mol_exportdata = context.scene.mol.exportdata
             mol_exportdata.clear()
             sim.pack_data(context, False)
 
+            etime = time.time()
+            print("    Pack Data: {:.3f} sec".format(etime - stime))
+            print()
+
+            # core simulate
+            stime = time.time()
+
             mol_importdata = core.simulate(mol_exportdata)
+
+            etime = time.time()
+            print("    Core Simulation: {:.3f} sec".format(etime - stime))
+
+            # particle systems update
+            stime = time.time()
 
             framesubstep = frame_current / (mol_substep + 1)   
 
@@ -374,34 +409,38 @@ class MolSimulateModal(bpy.types.Operator):
                             par_cache.write(psys, file_path)
                         i += 1
 
+            etime = time.time()
+            print("    Particle Systems Update: {:.3f} sec".format(etime - stime))
+
             if framesubstep == int(framesubstep):
-                etime = time.perf_counter()
-                print("    frame " + str(framesubstep + 1) + ":")
-                print("      links created:", scene.mol.newlink)
+                etime = time.time()
+                print("    Frame {}:".format(framesubstep + 1))
+                print("        Links Created:", scene.mol.newlink)
                 if scene.mol.totallink:
-                    print("      links broked :", scene.mol.deadlink)
-                    print("      total links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
-                print("      Molecular Script: " + str(round(etime - scene.mol.stime, 3)) + " sec")
+                    print("        Links Broked:", scene.mol.deadlink)
+                    print("        Total Links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
                 remain = (((etime - scene.mol.stime) * (scene.mol.old_endframe - framesubstep - 1)))
                 days = int(time.strftime('%d', time.gmtime(remain))) - 1
                 scene.mol.timeremain = time.strftime(str(days) + ' days %H hours %M mins %S secs', time.gmtime(remain))
-                print("      Remaining estimated:", scene.mol.timeremain)
+                print("        Remaining Estimated:", scene.mol.timeremain)
                 scene.mol.newlink = 0
                 scene.mol.deadlink = 0
-                scene.mol.stime = time.perf_counter()
-                stime2 = time.perf_counter()
+                scene.mol.stime = time.time()
+                stime2 = time.time()
+
             scene.mol.newlink += mol_importdata[1]
             scene.mol.deadlink += mol_importdata[2]
             scene.mol.totallink = mol_importdata[3]
             scene.mol.totaldeadlink = mol_importdata[4]
-            
+
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
-            
+
             if framesubstep == int(framesubstep):
-                etime2 = time.perf_counter()
-                print("      Blender: " + str(round(etime2 - stime2, 3)) + " sec")
-                stime2 = time.perf_counter()
+                etime2 = time.time()
+                print("        Blender Frame Set: " + str(round(etime2 - stime2, 3)) + " sec")
+                stime2 = time.time()
+                print()
 
         return {'PASS_THROUGH'}
 
@@ -409,6 +448,7 @@ class MolSimulateModal(bpy.types.Operator):
         # start time
         self.st = time.time()
         self.check_bake_uv(context)
+        self.step = 0
         self._timer = context.window_manager.event_timer_add(0.000000001, window=context.window)
         context.window_manager.modal_handler_add(self)
         return {'RUNNING_MODAL'}
