@@ -1,15 +1,18 @@
+import os
 import shutil
-from distutils.core import setup
-from distutils.extension import Extension
+import distutils
 
 
-module = Extension(
+if os.path.exists('build'):
+    shutil.rmtree('build')
+
+module = distutils.extension.Extension(
     'core',
     sources=['core\\main.c'],
     extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast']
 )
 
-setup(
+distutils.core.setup(
     name='Molecular Core',
     version='1.0',
     description='This is a core for molecular addon',
