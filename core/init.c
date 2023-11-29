@@ -185,6 +185,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
         }
     }
 
+    #pragma omp parallel for schedule(dynamic, 10)
     for (i=0; i<parnum; i++) {
         create_link(parlist[i].id, parlist[i].sys->link_max, 1, -1);
 
