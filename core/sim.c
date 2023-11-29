@@ -149,7 +149,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id;
     }
 
-
     if (profiling == 1) {
         printf("-->copy data time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         stime = clock();
@@ -203,17 +202,13 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     PyObject *parvel = PyList_New(0);
 
     for (i=0; i<psysnum; i++) {
-        PyObject *parveltmp = PyList_New(0);
+        PyObject *parveltmp = PyList_New(psys[i].parnum * 3);
 
         for (ii=0; ii<psys[i].parnum; ii++) {
 
-            PyObject *vel_x = Py_BuildValue("f", psys[i].particles[ii].vel[0]);
-            PyObject *vel_y = Py_BuildValue("f", psys[i].particles[ii].vel[1]);
-            PyObject *vel_z = Py_BuildValue("f", psys[i].particles[ii].vel[2]);
-
-            PyList_Append(parveltmp, vel_x);
-            PyList_Append(parveltmp, vel_y);
-            PyList_Append(parveltmp, vel_z);
+            PyList_SetItem(parveltmp, ii*3, Py_BuildValue("f", psys[i].particles[ii].vel[0]));
+            PyList_SetItem(parveltmp, ii*3 + 1, Py_BuildValue("f", psys[i].particles[ii].vel[1]));
+            PyList_SetItem(parveltmp, ii*3 + 2, Py_BuildValue("f", psys[i].particles[ii].vel[2]));
 
         }
 
