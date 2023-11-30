@@ -205,7 +205,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
         for (ii=0; ii<psys[i].parnum; ii++) {
 
-            PyList_SetItem(parveltmp, ii*3, Py_BuildValue("f", psys[i].particles[ii].vel[0]));
+            PyList_SetItem(parveltmp, ii*3,     Py_BuildValue("f", psys[i].particles[ii].vel[0]));
             PyList_SetItem(parveltmp, ii*3 + 1, Py_BuildValue("f", psys[i].particles[ii].vel[1]));
             PyList_SetItem(parveltmp, ii*3 + 2, Py_BuildValue("f", psys[i].particles[ii].vel[2]));
 
