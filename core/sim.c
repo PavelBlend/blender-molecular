@@ -239,7 +239,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     free(parPool[0].parity);
     free(parPool);
 
-
     if (profiling == 1) {
         printf("-->export time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         printf("-->all process time %.12f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
