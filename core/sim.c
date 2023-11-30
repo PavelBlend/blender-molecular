@@ -48,7 +48,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         stime = clock();
     }
 
-    #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel for
     for (i=0; i<parnum; i++) {
 
         parlistcopy[i].id = parlist[i].id;
