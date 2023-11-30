@@ -11,29 +11,37 @@ def pack_data(context, initiate):
     psyslen = 0
     parnum = 0
     scene = context.scene
+
     for ob in bpy.data.objects:
         obj = utils.get_object(ob)
 
-        for psys in obj.particle_systems:           
+        for psys in obj.particle_systems:
+
             if psys.settings.mol.matter != "-1":
                 psys.settings.mol.density = float(psys.settings.mol.matter)
+
             if psys.settings.mol.active and len(psys.particles):
                 parlen = len(psys.particles)
                 par_loc = [0.0, ] * (parlen * 3)
                 par_vel = [0.0, ] * (parlen * 3)
                 par_size = [0.0, ] * parlen
-                par_alive = []
-                for par in psys.particles:
-                    parnum += 1
-                    if par.alive_state == "UNBORN":
-                        par_alive.append(2)
-                    if par.alive_state == "ALIVE":
-                        par_alive.append(0)
-                    if par.alive_state == "DEAD":
-                        par_alive.append(3)
+                par_alive = [0, ] * parlen
+
+                parnum = len(psys.particles)
 
                 psys.particles.foreach_get('location', par_loc)
                 psys.particles.foreach_get('velocity', par_vel)
+                psys.particles.foreach_get('alive_state', par_alive)
+
+                for index in range(parlen):
+
+                    # alive
+                    if par_alive[index] == 3:
+                        par_alive[index] = 0
+
+                    # dead
+                    elif par_alive[index] == 1:
+                        par_alive[index] = 3
 
                 if initiate:
                     par_mass = []
