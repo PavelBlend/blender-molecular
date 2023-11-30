@@ -242,7 +242,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     if (profiling == 1) {
         printf("-->export time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         printf("-->all process time %.12f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
-        printf("\n\n");
+        printf("\n");
     }
 
     return exportdata;
