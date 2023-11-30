@@ -436,6 +436,10 @@ class MolSimulateModal(bpy.types.Operator):
             scene.mol.totallink = mol_importdata[3]
             scene.mol.totaldeadlink = mol_importdata[4]
 
+            # free velocity memory
+            for velocity in mol_importdata[0]:
+                velocity.clear()
+
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current + 1)
 
