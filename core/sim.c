@@ -44,7 +44,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     update(importdata);
 
     if (profiling == 1) {
-        printf("-->update time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+        printf("-->update time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         stime = clock();
     }
 
@@ -150,7 +150,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     if (profiling == 1) {
-        printf("-->copy data time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+        printf("-->copy data time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         stime = clock();
     }
 
@@ -162,7 +162,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     if (profiling == 1) {
-        printf("-->create tree time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+        printf("-->create tree time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         stime = clock();
     }
 
@@ -172,7 +172,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     if (profiling == 1) {
-        printf("-->neighbours time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+        printf("-->neighbours time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         stime = clock();
     }
 
@@ -193,7 +193,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     if (profiling == 1) {
-        printf("-->collide/solve link time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+        printf("-->collide/solve link time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
         stime = clock();
     }
 
@@ -240,8 +240,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     free(parPool);
 
     if (profiling == 1) {
-        printf("-->export time %.12f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        printf("-->all process time %.12f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
+        printf("-->export time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+        printf("-->all process time %.3f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
         printf("\n");
     }
 
