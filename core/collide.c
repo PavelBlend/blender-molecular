@@ -145,9 +145,9 @@ void collide(Particle *par) {
                     par->vel[1] = ((ypar_vel[1] * damping1) + (yi_vel[1] * (1 - damping1))) + ((xpar_vel[1] * friction1) + (xi_vel[1] * (1 - friction1)));
                     par->vel[2] = ((ypar_vel[2] * damping1) + (yi_vel[2] * (1 - damping1))) + ((xpar_vel[2] * friction1) + (xi_vel[2] * (1 - friction1)));
 
-                    par2->vel[0] = ((yi_vel[0] * damping2) + (ypar_vel[0] * (1 - damping2))) + ((xi_vel[0] * friction2) + ( xpar_vel[0] * (1 - friction2)));
-                    par2->vel[1] = ((yi_vel[1] * damping2) + (ypar_vel[1] * (1 - damping2))) + ((xi_vel[1] * friction2) + ( xpar_vel[1] * (1 - friction2)));
-                    par2->vel[2] = ((yi_vel[2] * damping2) + (ypar_vel[2] * (1 - damping2))) + ((xi_vel[2] * friction2) + ( xpar_vel[2] * (1 - friction2)));
+                    par2->vel[0] = ((yi_vel[0] * damping2) + (ypar_vel[0] * (1 - damping2))) + ((xi_vel[0] * friction2) + (xpar_vel[0] * (1 - friction2)));
+                    par2->vel[1] = ((yi_vel[1] * damping2) + (ypar_vel[1] * (1 - damping2))) + ((xi_vel[1] * friction2) + (xpar_vel[1] * (1 - friction2)));
+                    par2->vel[2] = ((yi_vel[2] * damping2) + (ypar_vel[2] * (1 - damping2))) + ((xi_vel[2] * friction2) + (xpar_vel[2] * (1 - friction2)));
 
                     par2->collided_with[par2->collided_num] = par->id;
                     par2->collided_num += 1;
