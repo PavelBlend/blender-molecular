@@ -3,30 +3,13 @@ Blender Molecular
 
 This is molecular addon for blender. Inspired from the 2d simulator Really (1998) and Lagoa Multiphysic in Softimage.
 
-To download the latest version:
+Based on Molecular Script from [Pyroevil](https://github.com/Pyroevil/Blender-Molecular-Script).
 
-https://github.com/scorpion81/Blender-Molecular-Script/releases
+The core has been rewritten from Cython to C.
 
-The addon can be installed like any other addons in Blender:
-First way:
-- unzip the folder "molecular" in your "x.xx\scripts\addons" blender directory
+### Build C Core:
+Run: ```python setup.py build```
 
-or
-
-Second Way:
-- Open Blender
-- Go in File > User Preferences > Addons tab
-- Click on "Install from file" button.
-- Browse and click the downloaded zip file and push the "Install from file..." button.
-
-To activate the plugins:
-- Open Blender
-- Go in File > User Preferences > Addons tab
-- In the "Physics" categories, you must find "Molecular"
-- Check it , close the "Blender user preferences" windows and have fun.
-
-Build Source:
-```python setup.py build```
-
-Install Addon:
-```python install.py```
+### Install Addon:
+Add an `BLENDER_USER_ADDON_PATH` environment variable that will reference the blender addons directory.
+Run: ```python install.py```
