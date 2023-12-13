@@ -10,13 +10,13 @@ Based on `Molecular Script` from [Pyroevil](https://github.com/Pyroevil/Blender-
 The core has been rewritten from `Cython` to `C`.
 
 ### Build C Core:
-========================
+
 Install `OpenMP`.
 
 Run: ```python setup.py build```
 
 ### Install Addon:
-========================
+
 Add an `BLENDER_USER_ADDON_PATH` environment variable that will reference the blender addons directory.
 
 Run: ```python install.py```
