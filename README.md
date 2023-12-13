@@ -1,7 +1,7 @@
 Blender Molecular
 ========================
 
-This is molecular addon for `blender`.
+This is molecular addon for `Blender`.
 
 Inspired from the 2D simulator `Really` (1998) and `Lagoa Multiphysic` in `Softimage`.
 
