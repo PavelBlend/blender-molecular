@@ -1,8 +1,6 @@
 __pycache__
-*.pyd
 build
-*.html
-.vscode
+*.pyc
+*.pyd
 *.zip
 *.bat
-core/core.pyx
