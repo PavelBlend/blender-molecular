@@ -585,46 +585,6 @@ class MolecularToolsPanel(MolecularBasePanel):
         row.label(text='{}'.format(round(diff, 5)))
 
 
-class MolecularAboutPanel(MolecularBasePanel):
-    bl_label = 'About'
-    bl_idname = "OBJECT_PT_molecular_about"
-    bl_parent_id = 'OBJECT_PT_molecular'
-
-    def draw(self, context):
-        layout = self.layout
-        scn = bpy.context.scene
-        obj = context.object
-        psys = obj.particle_systems.active
-        if psys is None:
-            return
-        layout.enabled = psys.settings.mol.active
-        # for the data    
-        psys_eval = utils.get_object(context.object).particle_systems.active
-
-        box = layout.box()
-        row = box.row()
-        box.active = False
-        box.alert = False
-        row.alignment = 'CENTER'
-        row.label(text=names.THANKS)
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text=names.SUPPORT_WORK)
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.operator(
-            "wm.url_open",
-            text="click here to Donate",
-            icon='URL'
-        ).url = "www.pyroevil.com/donate/"
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text=names.VISIT)
-        row = box.row()
-        row.alignment = 'CENTER'
-        row.label(text=names.SITE)
-
-
 class MolecularPanel(MolecularBasePanel):
     """Creates a Panel in the Object properties window"""
     bl_label = "Molecular"
@@ -666,8 +626,7 @@ panel_classes = (
         MolecularNewLinksStiffnessPanel,
         MolecularNewLinksDampingPanel,
         MolecularNewLinksBrokenPanel,
-    MolecularToolsPanel,
-    MolecularAboutPanel
+    MolecularToolsPanel
 )
 
 
