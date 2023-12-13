@@ -1,11 +1,11 @@
 Blender Molecular
 ========================
 
-This is molecular addon for blender. Inspired from the 2d simulator Really (1998) and Lagoa Multiphysic in Softimage.
+This is molecular addon for `blender`. Inspired from the 2d simulator `Really` (1998) and `Lagoa Multiphysic` in `Softimage`.
 
-Based on Molecular Script from [Pyroevil](https://github.com/Pyroevil/Blender-Molecular-Script).
+Based on `Molecular Script` from [Pyroevil](https://github.com/Pyroevil/Blender-Molecular-Script).
 
-The core has been rewritten from Cython to C.
+The core has been rewritten from `Cython` to `C`.
 
 ### Build C Core:
 Install `OpenMP`.
