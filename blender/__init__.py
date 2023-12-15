@@ -7,7 +7,7 @@ bl_info = {
     'version': (1, 1, 2),
     'blender': (2, 80, 0),
     'location': 'Properties > Particle Properties',
-    'description': 
+    'description':
         'Addon for calculating collisions '
         'and for creating links between particles',
     'wiki_url': 'https://github.com/PavelBlend/blender-molecular',
@@ -16,24 +16,20 @@ bl_info = {
 }
 
 
-def get_modules():
-    from . import props
-    from . import ops
-    from . import ui
-    from . import handlers
+from . import props
+from . import ops
+from . import ui
+from . import handlers
 
-    modules = (props, ops, ui, handlers)
 
-    return modules
+modules = (props, ops, ui, handlers)
 
 
 def register():
-    modules = get_modules()
     for module in modules:
         module.register()
 
 
 def unregister():
-    modules = get_modules()
     for module in reversed(modules):
         module.unregister()
