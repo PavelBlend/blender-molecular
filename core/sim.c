@@ -180,7 +180,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
         for (heaps=0; heaps<(int)(parPool[0].max * scale) + 1; heaps++) {
 
-            #pragma omp parallel for schedule(static)
+            // #pragma omp parallel for schedule(static)
             for (i=0; i<parPool[0].parity[pair].heap[heaps].parnum; i++) {
 
                 collide(&parlist[parPool[0].parity[pair].heap[heaps].par[i]]);
