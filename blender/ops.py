@@ -67,12 +67,11 @@ class MolSimulate(bpy.types.Operator):
 
         # scene settings
         mol_substep = scene.mol.substep
-        steps_per_frame = mol_substep + 1
 
         scene.frame_set(frame=scene.frame_start)
         scene.render.frame_map_old = 1
-        scene.render.frame_map_new = steps_per_frame
-        scene.frame_end *= steps_per_frame
+        scene.render.frame_map_new = mol_substep
+        scene.frame_end *= mol_substep
 
         # fps
         if scene.mol.timescale_active:
@@ -326,7 +325,7 @@ class MolSimulateModal(bpy.types.Operator):
                     if psys.settings.mol.active and len(psys.particles):
                         par_cache = cache.ParticlesIO()
                         par_cache.add_attr(cache.VELOCITY)
-                        framesubstep = frame_current / (mol_substep + 1)  
+                        framesubstep = frame_current / mol_substep
                         name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
                         cache_folder = bpy.path.abspath(scene.mol.cache_folder)
                         file_path = os.path.join(cache_folder, name)
@@ -391,7 +390,7 @@ class MolSimulateModal(bpy.types.Operator):
             # particle systems update
             stime = time.time()
 
-            framesubstep = frame_current / (mol_substep + 1)   
+            framesubstep = frame_current / mol_substep
 
             i = 0
             for ob in bpy.data.objects:

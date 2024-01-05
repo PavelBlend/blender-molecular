@@ -39,7 +39,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
     omp_set_num_threads(cpunum);
 
-    deltatime = fps * (float)(substep + 1);
+    deltatime = fps * (float)(substep);
 
     psys = (ParSys*) malloc(psysnum * sizeof(ParSys));
     parlist = (Particle*) malloc(parnum * sizeof(Particle));
