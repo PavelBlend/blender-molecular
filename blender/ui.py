@@ -438,7 +438,7 @@ class MolecularSimulatePanel(MolecularBasePanel):
         draw_prop(box, scn, 'frame_start', 'Start Frame')
         draw_prop(box, scn, 'frame_end', 'End Frame')
 
-        draw_prop(box, scn.mol, 'substep', 'Substeps')
+        draw_prop(box, scn.mol, 'substep', 'Steps per Frame')
         draw_prop(box, scn.mol, 'cpu', names.CPU_USED)
 
         box = layout.box()

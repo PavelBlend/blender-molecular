@@ -350,10 +350,10 @@ def define_scene_props():
         default=1
     )
     MolScnProps.substep = bpy.props.IntProperty(
-        name="Substeps",
+        name="Steps per Frame",
         description=desc.SUBSTEP,
-        min=0,
-        max=900,
+        min=1,
+        max=10_000,
         default=4
     )
     MolScnProps.render = bpy.props.BoolProperty(
@@ -382,7 +382,6 @@ def define_scene_props():
     MolScnProps.minsize = bpy.props.FloatProperty()
     MolScnProps.simrun = bpy.props.BoolProperty(default=False)
     MolScnProps.timeremain = bpy.props.StringProperty()
-    MolScnProps.old_endframe = bpy.props.IntProperty()
     MolScnProps.newlink = bpy.props.IntProperty()
     MolScnProps.deadlink = bpy.props.IntProperty()
     MolScnProps.totallink = bpy.props.IntProperty()

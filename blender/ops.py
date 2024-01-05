@@ -63,15 +63,11 @@ class MolSimulate(bpy.types.Operator):
         mol.totallink = 0
         mol.totaldeadlink = 0
         mol.timeremain = "...Simulating..."
-        mol.old_endframe = scene.frame_end
 
         # scene settings
         mol_substep = scene.mol.substep
 
         scene.frame_set(frame=scene.frame_start)
-        scene.render.frame_map_old = 1
-        scene.render.frame_map_new = mol_substep
-        scene.frame_end *= mol_substep
 
         # fps
         if scene.mol.timescale_active:
@@ -81,7 +77,7 @@ class MolSimulate(bpy.types.Operator):
 
         # init export data
         cpu = scene.mol.cpu
-        mol_exportdata = context.scene.mol.exportdata
+        mol_exportdata = scene.mol.exportdata
         mol_exportdata.clear()
         mol_exportdata.append([
             fps,
@@ -315,8 +311,11 @@ class MolSimulateModal(bpy.types.Operator):
     def modal(self, context, event):
         scene = context.scene
         frame_end = scene.frame_end
-        frame_current = scene.frame_current
         mol_substep = scene.mol.substep
+
+        frame_float = self.step / mol_substep
+        frame_current = int(frame_float)
+        subframe = frame_float - frame_current
 
         if event.type == 'ESC' or frame_current == frame_end:
             for ob in bpy.data.objects:
@@ -325,16 +324,13 @@ class MolSimulateModal(bpy.types.Operator):
                     if psys.settings.mol.active and len(psys.particles):
                         par_cache = cache.ParticlesIO()
                         par_cache.add_attr(cache.VELOCITY)
-                        framesubstep = frame_current / mol_substep
-                        name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
+                        name = '{}_{:0>6}'.format(psys.point_cache.name, frame_current)
                         cache_folder = bpy.path.abspath(scene.mol.cache_folder)
                         file_path = os.path.join(cache_folder, name)
                         if not os.path.exists(cache_folder):
                             os.makedirs(cache_folder)
                         par_cache.write(psys, file_path)
 
-            scene.render.frame_map_new = 1
-            scene.frame_end = scene.mol.old_endframe
             context.view_layer.update()
 
             # self.check_bake_uv(context)
@@ -390,8 +386,6 @@ class MolSimulateModal(bpy.types.Operator):
             # particle systems update
             stime = time.time()
 
-            framesubstep = frame_current / mol_substep
-
             i = 0
             for ob in bpy.data.objects:
                 obj = utils.get_object(ob)
@@ -399,10 +393,10 @@ class MolSimulateModal(bpy.types.Operator):
                 for psys in obj.particle_systems:
                     if psys.settings.mol.active and len(psys.particles):
                         psys.particles.foreach_set('velocity', mol_importdata[0][i])
-                        if framesubstep == int(framesubstep):
+                        if frame_float == int(frame_float):
                             par_cache = cache.ParticlesIO()
                             par_cache.add_attr(cache.VELOCITY)
-                            name = '{}_{:0>6}'.format(psys.point_cache.name, int(framesubstep))
+                            name = '{}_{:0>6}'.format(psys.point_cache.name, int(frame_float))
                             cache_folder = bpy.path.abspath(scene.mol.cache_folder)
                             file_path = os.path.join(cache_folder, name)
                             if not os.path.exists(cache_folder):
@@ -413,14 +407,14 @@ class MolSimulateModal(bpy.types.Operator):
             etime = time.time()
             print("    Particle Systems Update: {:.3f} sec".format(etime - stime))
 
-            if framesubstep == int(framesubstep):
+            if frame_float == int(frame_float):
                 etime = time.time()
-                print("    Frame {}:".format(framesubstep + 1))
+                print("    Frame {}:".format(frame_current + 1))
                 print("    Links Created:", scene.mol.newlink)
                 if scene.mol.totallink:
                     print("    Links Broked:", scene.mol.deadlink)
                     print("    Total Links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
-                remain = (((etime - scene.mol.stime) * (scene.mol.old_endframe - framesubstep - 1)))
+                remain = (((etime - scene.mol.stime) * (scene.frame_end - frame_current - 1)))
                 days = int(time.strftime('%d', time.gmtime(remain))) - 1
                 scene.mol.timeremain = time.strftime(str(days) + ' days %H hours %M mins %S secs', time.gmtime(remain))
                 print("    Remaining Estimated:", scene.mol.timeremain)
@@ -440,7 +434,7 @@ class MolSimulateModal(bpy.types.Operator):
                 velocity.clear()
 
             self.check_write_uv_cache(context)
-            scene.frame_set(frame=frame_current + 1)
+            scene.frame_set(frame=frame_current, subframe=subframe)
 
             etime2 = time.time()
             print("    Blender Frame Set: {:.3f} sec".format(etime2 - stime2))
