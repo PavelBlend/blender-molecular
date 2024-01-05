@@ -21,7 +21,7 @@ void KDTree_rnn_search(KDTree *kdtree, Particle *par, Node node, float point[3],
                 par->neighboursmax = par->neighboursmax * 2;
                 par->neighbours = (int*) realloc(par->neighbours, par->neighboursmax * sizeof(int));
             }
-            par->neighbours[par->neighboursnum] = node.particle[0].id;
+            par->neighbours[par->neighboursnum-1] = node.particle[0].id;
         }
 
         KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
