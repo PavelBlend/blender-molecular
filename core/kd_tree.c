@@ -77,9 +77,7 @@ Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end
     if (depth == 0) {
         kdtree->thread_index = 0;
         index = 0;
-    }
-
-    else {
+    } else {
         index = parent * 2 + name;
     }
 
@@ -117,7 +115,7 @@ Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end
 }
 
 
-void KDTree_create_nodes(KDTree *kdtree,int parnum) {
+void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     int i = 2;
 
     while (i < parnum) {
@@ -128,7 +126,7 @@ void KDTree_create_nodes(KDTree *kdtree,int parnum) {
     kdtree->nodes = (Node*) malloc((kdtree->numnodes + 1) * sizeof(Node));
     kdtree->root_node = (Node*) malloc(sizeof(Node));
 
-    for (int i=0; i<kdtree->numnodes; i++) {
+    for (int i=0; i<=kdtree->numnodes; i++) {
         kdtree->nodes[i].index = i;
         kdtree->nodes[i].name = -1;
         kdtree->nodes[i].parent = -1;
@@ -142,15 +140,6 @@ void KDTree_create_nodes(KDTree *kdtree,int parnum) {
     }
 
     kdtree->nodes[kdtree->numnodes].index = -1;
-    kdtree->nodes[kdtree->numnodes].name = -1;
-    kdtree->nodes[kdtree->numnodes].parent = -1;
-
-    kdtree->nodes[kdtree->numnodes].particle = (SParticle*) malloc(sizeof(SParticle));
-    kdtree->nodes[kdtree->numnodes].left_child = (Node*) malloc(sizeof(Node));
-    kdtree->nodes[kdtree->numnodes].right_child = (Node*) malloc(sizeof(Node));
-
-    kdtree->nodes[kdtree->numnodes].left_child[0].index = -1;
-    kdtree->nodes[kdtree->numnodes].right_child[0].index = -1;
 
     kdtree->thread_nodes = (int*) malloc(128 * sizeof(int));
     kdtree->thread_start = (int*) malloc(128 * sizeof(int));

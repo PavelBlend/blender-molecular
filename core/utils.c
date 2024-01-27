@@ -18,7 +18,7 @@ void quick_sort(SParticle *a, int n, int axis) {
             l += 1;
             continue;
         }
-        
+
         if (r[0].loc[axis] > p) {
             r -= 1;
             /*
