@@ -76,7 +76,6 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
     p_id = par_id_list[par->id];
 
     link_friction_1 = randomize_value(par->sys->link_friction, par->sys->link_frictionrand);
-    link_tension_1 = randomize_value(par->sys->link_tension, par->sys->link_tensionrand);
     link_stiff_1 = randomize_value(par->sys->link_stiff, par->sys->link_stiffrand);
     link_estiff_1 = randomize_value(par->sys->link_estiff, par->sys->link_estiffrand);
     link_damp_1 = randomize_value(par->sys->link_damp, par->sys->link_damprand);
@@ -84,7 +83,6 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
     link_broken_1 = randomize_value(par->sys->link_broken, par->sys->link_brokenrand);
     link_ebroken_1 = randomize_value(par->sys->link_ebroken, par->sys->link_ebrokenrand);
     relink_chance_1 = randomize_value(par->sys->relink_chance, par->sys->relink_chancerand);
-    relink_tension_1 = randomize_value(par->sys->relink_tension, par->sys->relink_tensionrand);
     relink_stiff_1 = randomize_value(par->sys->relink_stiff, par->sys->relink_stiffrand);
     relink_estiff_1 = randomize_value(par->sys->relink_estiff, par->sys->relink_estiffrand);
     relink_damp_1 = randomize_value(par->sys->relink_damp, par->sys->relink_damprand);
@@ -129,14 +127,12 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
                     }
 
                     if (create_links == 1) {
-                        link_tension_2 = randomize_value(par2->sys->link_tension, par2->sys->link_tensionrand);
-                        tension = average_value(link_tension_1, link_tension_2);
-                        link->lenght = pow(square_dist(par->loc, par2->loc, 3), 0.5) * tension;
+                        link->lenght = pow(square_dist(par->loc, par2->loc, 3), 0.5);
                         link->stiffness = average_value(link_stiff_1, link_stiff_2);
                         link_estiff_2 = randomize_value(par2->sys->link_estiff, par2->sys->link_estiffrand);
                         link->estiffness = average_value(link_estiff_1, link_estiff_2);
-                        link->exponent = abs((int)((par->sys->link_stiffexp + par2->sys->link_stiffexp) / 2));
-                        link->eexponent = abs((int)((par->sys->link_estiffexp + par2->sys->link_estiffexp) / 2));
+                        link->exponent = 1.0;
+                        link->eexponent = 1.0;
                         link_damp_2 = randomize_value(par2->sys->link_damp, par2->sys->link_damprand);
                         link->damping = average_value(link_damp_1, link_damp_2);
                         link_edamp_2 = randomize_value(par2->sys->link_edamp, par2->sys->link_edamprand);
@@ -170,15 +166,13 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
 
                     if (relink_random <= average_value(relink_chance_1, relink_chance_2)) {
 
-                        relink_tension_2 = randomize_value(par2->sys->relink_tension, par2->sys->relink_tensionrand);
-                        tension = average_value(relink_tension_1, relink_tension_2);
-                        link->lenght = pow(square_dist(par->loc, par2->loc, 3), 0.5) * tension;
+                        link->lenght = pow(square_dist(par->loc, par2->loc, 3), 0.5);
                         relink_stiff_2 = randomize_value(par2->sys->relink_stiff, par2->sys->relink_stiffrand);
                         relink_estiff_2 = randomize_value(par2->sys->relink_estiff, par2->sys->relink_estiffrand);
                         link->stiffness = average_value(relink_stiff_1, relink_stiff_2);
                         link->estiffness = average_value(relink_estiff_1, relink_estiff_2);
-                        link->exponent = abs((int)((par->sys->relink_stiffexp + par2->sys->relink_stiffexp) / 2));
-                        link->eexponent = abs((int)((par->sys->relink_estiffexp + par2->sys->relink_estiffexp) / 2));
+                        link->exponent = 1.0;
+                        link->eexponent = 1.0;
                         relink_damp_2 = randomize_value(par2->sys->relink_damp, par2->sys->relink_damprand);
                         relink_edamp_2 = randomize_value(par2->sys->relink_edamp, par2->sys->relink_edamprand);
                         link->damping = average_value(relink_damp_1, relink_damp_2);

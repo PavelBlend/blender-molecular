@@ -62,49 +62,50 @@ static PyObject* init(PyObject *self, PyObject *args) {
         psys[i].collision_group         =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  2));
         psys[i].friction                = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  3));
         psys[i].collision_damp          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  4));
+
         psys[i].links_active            =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  5));
-        psys[i].link_length             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  6));
-        psys[i].link_max                =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  7));
-        psys[i].link_tension            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  8));
-        psys[i].link_tensionrand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  9));
-        psys[i].link_stiff              = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 10)) * 0.5;
-        psys[i].link_stiffrand          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 11));
-        psys[i].link_stiffexp           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 12));
-        psys[i].link_damp               = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 13));
-        psys[i].link_damprand           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 14));
-        psys[i].link_broken             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 15));
-        psys[i].link_brokenrand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 16));
-        psys[i].link_estiff             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 17)) * 0.5;
-        psys[i].link_estiffrand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 18));
-        psys[i].link_estiffexp          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 19));
-        psys[i].link_edamp              = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 20));
-        psys[i].link_edamprand          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 21));
+        psys[i].other_link_active       =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  6));
+        psys[i].link_group              =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  7));
+        psys[i].link_friction           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  8));
+        psys[i].link_frictionrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  9));
+        psys[i].link_max                =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 10));
+        psys[i].link_length             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 11));
+
+        psys[i].link_stiff              = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 12)) * 0.5;
+        psys[i].link_stiffrand          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 13));
+        psys[i].link_estiff             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 14)) * 0.5;
+        psys[i].link_estiffrand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 15));
+
+        psys[i].link_damp               = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 16));
+        psys[i].link_damprand           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 17));
+        psys[i].link_edamp              = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 18));
+        psys[i].link_edamprand          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 19));
+
+
+        psys[i].link_broken             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 20));
+        psys[i].link_brokenrand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 21));
         psys[i].link_ebroken            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 22));
         psys[i].link_ebrokenrand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 23));
+
         psys[i].relink_group            =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 24));
         psys[i].relink_chance           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 25));
         psys[i].relink_chancerand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 26));
         psys[i].relink_max              =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 27));
-        psys[i].relink_tension          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 28));
-        psys[i].relink_tensionrand      = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 29));
-        psys[i].relink_stiff            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 30)) * 0.5;
-        psys[i].relink_stiffexp         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 31));
-        psys[i].relink_stiffrand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 32));
-        psys[i].relink_damp             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 33));
-        psys[i].relink_damprand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 34));
-        psys[i].relink_broken           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 35));
-        psys[i].relink_brokenrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 36));
-        psys[i].relink_estiff           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 37)) * 0.5;
-        psys[i].relink_estiffexp        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 38));
-        psys[i].relink_estiffrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 39));
-        psys[i].relink_edamp            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 40));
-        psys[i].relink_edamprand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 41));
-        psys[i].relink_ebroken          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 42));
-        psys[i].relink_ebrokenrand      = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 43));
-        psys[i].link_friction           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 44));
-        psys[i].link_group              =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 45));
-        psys[i].other_link_active       =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 46));
-        psys[i].link_frictionrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 47));
+
+        psys[i].relink_stiff            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 28)) * 0.5;
+        psys[i].relink_stiffrand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 29));
+        psys[i].relink_estiff           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 30)) * 0.5;
+        psys[i].relink_estiffrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 31));
+
+        psys[i].relink_damp             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 32));
+        psys[i].relink_damprand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 33));
+        psys[i].relink_edamp            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 34));
+        psys[i].relink_edamprand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 35));
+
+        psys[i].relink_broken           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 36));
+        psys[i].relink_brokenrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 37));
+        psys[i].relink_ebroken          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 38));
+        psys[i].relink_ebrokenrand      = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 39));
 
         PyObject* location = PyList_GetItem(psys_props, 1);
         PyObject* velocity = PyList_GetItem(psys_props, 2);

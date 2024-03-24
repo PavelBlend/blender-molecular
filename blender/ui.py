@@ -214,24 +214,6 @@ class MolecularInitLinksFrictionPanel(MolecularBasePanel):
         draw_customizable_props(layout, psys, 'friction', same=True)
 
 
-class MolecularInitLinksTensionPanel(MolecularBasePanel):
-    bl_label = names.TENSION
-    bl_idname = "OBJECT_PT_molecular_init_links_tension"
-    bl_parent_id = 'OBJECT_PT_molecular_init_links'
-
-    def draw(self, context):
-        layout = self.layout
-        obj = context.object
-        psys = obj.particle_systems.active
-        if psys is None:
-            return
-        stg = psys.settings
-        layout.enabled = stg.mol.active and (
-            stg.mol.links_active or stg.mol.other_link_active
-        )
-        draw_customizable_props(layout, psys, 'tension', same=True)
-
-
 class MolecularInitLinksStiffnessPanel(MolecularBasePanel):
     bl_label = names.STIFFNESS
     bl_idname = "OBJECT_PT_molecular_init_links_stiffness"
@@ -341,24 +323,6 @@ class MolecularNewLinksFrictionPanel(MolecularBasePanel):
             stg.links_active or stg.other_link_active
         )
         draw_customizable_props(layout, psys, 'friction', same=True, relink=True)
-
-
-class MolecularNewLinksTensionPanel(MolecularBasePanel):
-    bl_label = names.TENSION
-    bl_idname = "OBJECT_PT_molecular_new_links_tension"
-    bl_parent_id = 'OBJECT_PT_molecular_new_links'
-
-    def draw(self, context):
-        layout = self.layout
-        obj = context.object
-        psys = obj.particle_systems.active
-        if psys is None:
-            return
-        stg = psys.settings.mol
-        layout.enabled = stg.active and (
-            stg.links_active or stg.other_link_active
-        )
-        draw_customizable_props(layout, psys, 'tension', same=True, relink=True)
 
 
 class MolecularNewLinksStiffnessPanel(MolecularBasePanel):
@@ -615,14 +579,12 @@ panel_classes = (
     MolecularLinksPanel,
     MolecularInitLinksPanel,
         MolecularInitLinksFrictionPanel,
-        MolecularInitLinksTensionPanel,
         MolecularInitLinksStiffnessPanel,
         MolecularInitLinksDampingPanel,
         MolecularInitLinksBrokenPanel,
     MolecularNewLinksPanel,
         MolecularNewLinksLinkingPanel,
         MolecularNewLinksFrictionPanel,
-        MolecularNewLinksTensionPanel,
         MolecularNewLinksStiffnessPanel,
         MolecularNewLinksDampingPanel,
         MolecularNewLinksBrokenPanel,

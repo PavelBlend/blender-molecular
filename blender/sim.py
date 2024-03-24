@@ -76,61 +76,69 @@ def pack_data(context, initiate):
                         psys.settings.mol.relink_ebroken = psys.settings.mol.relink_broken
                         psys.settings.mol.relink_ebrokenrand = psys.settings.mol.relink_brokenrand
 
-                    params = [0] * 48
+                    params = []
 
-                    params[0] = psys.settings.mol.selfcollision_active
-                    params[1] = psys.settings.mol.othercollision_active
-                    params[2] = psys.settings.mol.collision_group
-                    params[3] = psys.settings.mol.friction
-                    params[4] = psys.settings.mol.collision_damp
-                    params[5] = psys.settings.mol.links_active
+                    # collision
+                    params.append(psys.settings.mol.selfcollision_active)
+                    params.append(psys.settings.mol.othercollision_active)
+                    params.append(psys.settings.mol.collision_group)
+                    params.append(psys.settings.mol.friction)
+                    params.append(psys.settings.mol.collision_damp)
+
+                    # links
+                    params.append(psys.settings.mol.links_active)
+                    params.append(psys.settings.mol.other_link_active)
+                    params.append(psys.settings.mol.link_group)
+                    params.append(psys.settings.mol.link_friction)
+                    params.append(psys.settings.mol.link_frictionrand)
+                    params.append(psys.settings.mol.link_max)
 
                     if psys.settings.mol.link_rellength:
-                        params[6] = psys.settings.particle_size * psys.settings.mol.link_length
+                        params.append(psys.settings.particle_size * psys.settings.mol.link_length)
                     else:
-                        params[6] = psys.settings.mol.link_length
+                        params.append(psys.settings.mol.link_length)
 
-                    params[7] = psys.settings.mol.link_max
-                    params[8] = psys.settings.mol.link_tension
-                    params[9] = psys.settings.mol.link_tensionrand
-                    params[10] = psys.settings.mol.link_stiff
-                    params[11] = psys.settings.mol.link_stiffrand
-                    params[18] = psys.settings.mol.link_estiffrand
-                    params[12] = 1.0    # mol_link_stiffexp
-                    params[13] = psys.settings.mol.link_damp
-                    params[14] = psys.settings.mol.link_damprand
-                    params[21] = psys.settings.mol.link_edamprand
-                    params[15] = psys.settings.mol.link_broken
-                    params[16] = psys.settings.mol.link_brokenrand
-                    params[23] = psys.settings.mol.link_ebrokenrand
-                    params[17] = psys.settings.mol.link_estiff
-                    params[19] = 1.0    # mol_link_estiffexp
-                    params[20] = psys.settings.mol.link_edamp
-                    params[22] = psys.settings.mol.link_ebroken
-                    params[24] = psys.settings.mol.relink_group
-                    params[25] = psys.settings.mol.relink_chance
-                    params[26] = psys.settings.mol.relink_chancerand
-                    params[27] = psys.settings.mol.relink_max
-                    params[28] = psys.settings.mol.relink_tension
-                    params[29] = psys.settings.mol.relink_tensionrand
-                    params[30] = psys.settings.mol.relink_stiff
-                    params[31] = 1.0    # mol_relink_stiffexp
-                    params[32] = psys.settings.mol.relink_stiffrand
-                    params[39] = psys.settings.mol.relink_estiffrand
-                    params[33] = psys.settings.mol.relink_damp
-                    params[34] = psys.settings.mol.relink_damprand
-                    params[41] = psys.settings.mol.relink_edamprand
-                    params[35] = psys.settings.mol.relink_broken
-                    params[36] = psys.settings.mol.relink_brokenrand
-                    params[43] = psys.settings.mol.relink_ebrokenrand
-                    params[37] = psys.settings.mol.relink_estiff
-                    params[38] = 1.0    # mol_relink_estiffexp
-                    params[40] = psys.settings.mol.relink_edamp
-                    params[42] = psys.settings.mol.relink_ebroken
-                    params[44] = psys.settings.mol.link_friction
-                    params[45] = psys.settings.mol.link_group
-                    params[46] = psys.settings.mol.other_link_active
-                    params[47] = psys.settings.mol.link_frictionrand
+                    # stiffness
+                    params.append(psys.settings.mol.link_stiff)
+                    params.append(psys.settings.mol.link_stiffrand)
+                    params.append(psys.settings.mol.link_estiff)
+                    params.append(psys.settings.mol.link_estiffrand)
+
+                    # damping
+                    params.append(psys.settings.mol.link_damp)
+                    params.append(psys.settings.mol.link_damprand)
+                    params.append(psys.settings.mol.link_edamp)
+                    params.append(psys.settings.mol.link_edamprand)
+
+                    # broken
+                    params.append(psys.settings.mol.link_broken)
+                    params.append(psys.settings.mol.link_brokenrand)
+                    params.append(psys.settings.mol.link_ebroken)
+                    params.append(psys.settings.mol.link_ebrokenrand)
+
+                    # relink params
+                    params.append(psys.settings.mol.relink_group)
+                    params.append(psys.settings.mol.relink_chance)
+                    params.append(psys.settings.mol.relink_chancerand)
+                    params.append(psys.settings.mol.relink_max)
+
+                    # stiffness
+                    params.append(psys.settings.mol.relink_stiff)
+                    params.append(psys.settings.mol.relink_stiffrand)
+                    params.append(psys.settings.mol.relink_estiff)
+                    params.append(psys.settings.mol.relink_estiffrand)
+
+                    # damping
+                    params.append(psys.settings.mol.relink_damp)
+                    params.append(psys.settings.mol.relink_damprand)
+                    params.append(psys.settings.mol.relink_edamp)
+                    params.append(psys.settings.mol.relink_edamprand)
+
+                    # broken
+                    params.append(psys.settings.mol.relink_broken)
+                    params.append(psys.settings.mol.relink_brokenrand)
+                    params.append(psys.settings.mol.relink_ebroken)
+                    params.append(psys.settings.mol.relink_ebrokenrand)
 
                     for index, param in enumerate(params):
                         if type(param) == bool:

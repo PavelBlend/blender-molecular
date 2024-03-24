@@ -218,7 +218,6 @@ def define_links_birth_general_props(mol):
 def define_links_birth_props(mol):
     define_links_birth_general_props(mol)
     define_customizable_props(mol, 'friction', use_same_values=False)
-    define_customizable_props(mol, 'tension', use_same_values=False)
     define_customizable_props(mol, 'stiff', use_same_values=True)
     define_customizable_props(mol, 'damp', use_same_values=True)
     define_customizable_props(mol, 'broken', use_same_values=True)
@@ -253,12 +252,6 @@ def define_links_collision_props(mol):
     define_customizable_props(
         mol,
         'friction',
-        use_same_values=False,
-        relink=True
-    )
-    define_customizable_props(
-        mol,
-        'tension',
         use_same_values=False,
         relink=True
     )

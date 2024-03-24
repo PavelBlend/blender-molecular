@@ -40,7 +40,7 @@ if addon_path:
     core_name = 'core.cp310-win_amd64.pyd'
     core_path = molecular_path + os.sep + core_name
     shutil.copyfile(
-        'build\\lib.win-amd64-3.10\\'+core_name,
+        'build\\lib.win-amd64-cpython-310\\'+core_name,
         core_path
     )
     print('\n\n\tCore installed into:\n\n\t\t{}\n\n'.format(core_path))
