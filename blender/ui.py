@@ -449,7 +449,7 @@ class MolecularSimulatePanel(MolecularBasePanel):
             row.enabled = False
             row.operator(
                 "object.mol_simulate",
-                text="Process: {} left".format(scn.mol.timeremain)
+                text="Process: {}".format(scn.mol.timeremain)
             )
             row = box.row()
             row.enabled = False

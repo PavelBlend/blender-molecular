@@ -354,37 +354,17 @@ class MolSimulateModal(bpy.types.Operator):
             return self.cancel(context)
 
         if event.type == 'TIMER':
-
-            step_start = time.time()
-
-            print('-'*79)
-            print('Step: {}'.format(self.step))
             self.step += 1
 
-            if frame_current == scene.frame_start:
-                scene.mol.stime = time.time()
-
             # pack data
-            stime = time.time()
-
             mol_exportdata = context.scene.mol.exportdata
             mol_exportdata.clear()
             sim.pack_data(context, False)
 
-            etime = time.time()
-            print("    Pack Data: {:.3f} sec".format(etime - stime))
-            print()
-
             # core simulate
-            stime = time.time()
-
             mol_importdata = core.simulate(mol_exportdata)
 
-            etime = time.time()
-            print("    Core Simulation: {:.3f} sec".format(etime - stime))
-
             # particle systems update
-            stime = time.time()
 
             i = 0
             for ob in bpy.data.objects:
@@ -404,25 +384,9 @@ class MolSimulateModal(bpy.types.Operator):
                             par_cache.write(psys, file_path)
                         i += 1
 
-            etime = time.time()
-            print("    Particle Systems Update: {:.3f} sec".format(etime - stime))
-
             if frame_float == int(frame_float):
-                etime = time.time()
-                print("    Frame {}:".format(frame_current + 1))
-                print("    Links Created:", scene.mol.newlink)
-                if scene.mol.totallink:
-                    print("    Links Broked:", scene.mol.deadlink)
-                    print("    Total Links:", scene.mol.totallink - scene.mol.totaldeadlink ,"/", scene.mol.totallink," (",round((((scene.mol.totallink - scene.mol.totaldeadlink) / scene.mol.totallink) * 100), 2), "%)")
-                remain = (((etime - scene.mol.stime) * (scene.frame_end - frame_current - 1)))
-                days = int(time.strftime('%d', time.gmtime(remain))) - 1
-                scene.mol.timeremain = time.strftime(str(days) + ' days %H hours %M mins %S secs', time.gmtime(remain))
-                print("    Remaining Estimated:", scene.mol.timeremain)
                 scene.mol.newlink = 0
                 scene.mol.deadlink = 0
-                scene.mol.stime = time.time()
-
-            stime2 = time.time()
 
             scene.mol.newlink += mol_importdata[1]
             scene.mol.deadlink += mol_importdata[2]
@@ -435,13 +399,6 @@ class MolSimulateModal(bpy.types.Operator):
 
             self.check_write_uv_cache(context)
             scene.frame_set(frame=frame_current, subframe=subframe)
-
-            etime2 = time.time()
-            print("    Blender Frame Set: {:.3f} sec".format(etime2 - stime2))
-            print()
-
-            step_end = time.time()
-            print("Step Time: {:.3f} sec".format(step_end - step_start))
 
         return {'PASS_THROUGH'}
 
