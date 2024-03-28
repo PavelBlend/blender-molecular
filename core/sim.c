@@ -28,9 +28,9 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     Pool *parPool = (Pool*) malloc(sizeof(Pool));
 
     parPool->parity = (Parity*) malloc(2 * sizeof(Parity));
-    parPool[0].axis = -1;
-    parPool[0].offset = 0;
-    parPool[0].max = 0;
+    parPool->axis = -1;
+    parPool->offset = 0;
+    parPool->max = 0;
 
     newlinks = 0;
     deadlinks = 0;
@@ -100,25 +100,25 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     if ((maxX - minX) >= (maxY - minY) && (maxX - minX) >= (maxZ - minZ)) {
-        parPool[0].axis = 0;
-        parPool[0].offset = 0 - minX;
-        parPool[0].max = maxX + parPool[0].offset;
+        parPool->axis = 0;
+        parPool->offset = 0 - minX;
+        parPool->max = maxX + parPool->offset;
     }
 
     if ((maxY - minY) > (maxX - minX) && (maxY - minY) > (maxZ - minZ)) {
-        parPool[0].axis = 1;
-        parPool[0].offset = 0 - minY;
-        parPool[0].max = maxY + parPool[0].offset;
+        parPool->axis = 1;
+        parPool->offset = 0 - minY;
+        parPool->max = maxY + parPool->offset;
     }
 
     if ((maxZ - minZ) > (maxY - minY) && (maxZ - minZ) > (maxX - minX)) {
-        parPool[0].axis = 2;
-        parPool[0].offset = 0 - minZ;
-        parPool[0].max = maxZ + parPool[0].offset;
+        parPool->axis = 2;
+        parPool->offset = 0 - minZ;
+        parPool->max = maxZ + parPool->offset;
     }
 
-    if (parPool[0].max / 10 > maxSize) {
-        maxSize = parPool[0].max / 10;
+    if (parPool->max / 10 > maxSize) {
+        maxSize = parPool->max / 10;
     }
 
     int pair;
@@ -127,26 +127,26 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     for (pair=0; pair<2; pair++) {
 
-        parPool[0].parity[pair].heap = (Heap*) malloc(((int)(parPool[0].max * scale) + 1) * sizeof(Heap));
+        parPool->parity[pair].heap = (Heap*) malloc(((int)(parPool->max * scale) + 1) * sizeof(Heap));
 
-        for (heaps=0; heaps<(int)(parPool[0].max * scale) + 1; heaps++) {
-            parPool[0].parity[pair].heap[heaps].parnum = 0;
-            parPool[0].parity[pair].heap[heaps].maxalloc = 50;
-            parPool[0].parity[pair].heap[heaps].par = (int*) malloc(parPool[0].parity[pair].heap[heaps].maxalloc * sizeof(int));
+        for (heaps=0; heaps<(int)(parPool->max * scale) + 1; heaps++) {
+            parPool->parity[pair].heap[heaps].parnum = 0;
+            parPool->parity[pair].heap[heaps].maxalloc = 50;
+            parPool->parity[pair].heap[heaps].par = (int*) malloc(parPool->parity[pair].heap[heaps].maxalloc * sizeof(int));
         }
     }
 
     for (i=0; i<parnum; i++) {
-        pair = (int)((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale) % 2;
-        heaps = (int) ((parlist[i].loc[parPool[0].axis] + parPool[0].offset) * scale);
-        parPool[0].parity[pair].heap[heaps].parnum += 1;
+        pair = (int)((parlist[i].loc[parPool->axis] + parPool->offset) * scale) % 2;
+        heaps = (int) ((parlist[i].loc[parPool->axis] + parPool->offset) * scale);
+        parPool->parity[pair].heap[heaps].parnum += 1;
 
-        if (parPool[0].parity[pair].heap[heaps].parnum > parPool[0].parity[pair].heap[heaps].maxalloc) {
-            parPool[0].parity[pair].heap[heaps].maxalloc = (int) (parPool[0].parity[pair].heap[heaps].maxalloc * 1.25);
-            parPool[0].parity[pair].heap[heaps].par = (int*) realloc(parPool[0].parity[pair].heap[heaps].par, (parPool[0].parity[pair].heap[heaps].maxalloc + 2) * sizeof(int));
+        if (parPool->parity[pair].heap[heaps].parnum > parPool->parity[pair].heap[heaps].maxalloc) {
+            parPool->parity[pair].heap[heaps].maxalloc = (int) (parPool->parity[pair].heap[heaps].maxalloc * 1.25);
+            parPool->parity[pair].heap[heaps].par = (int*) realloc(parPool->parity[pair].heap[heaps].par, (parPool->parity[pair].heap[heaps].maxalloc + 2) * sizeof(int));
         }
 
-        parPool[0].parity[pair].heap[heaps].par[(parPool[0].parity[pair].heap[heaps].parnum - 1)] = parlist[i].id;
+        parPool->parity[pair].heap[heaps].par[(parPool->parity[pair].heap[heaps].parnum - 1)] = parlist[i].id;
     }
 
     if (profiling == 1) {
@@ -178,15 +178,15 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     for (pair=0; pair<2; pair++) {
 
-        for (heaps=0; heaps<(int)(parPool[0].max * scale) + 1; heaps++) {
+        for (heaps=0; heaps<(int)(parPool->max * scale) + 1; heaps++) {
 
-            for (i=0; i<parPool[0].parity[pair].heap[heaps].parnum; i++) {
+            for (i=0; i<parPool->parity[pair].heap[heaps].parnum; i++) {
 
-                collide(&parlist[parPool[0].parity[pair].heap[heaps].par[i]]);
-                solve_link(&parlist[parPool[0].parity[pair].heap[heaps].par[i]]);
+                collide(&parlist[parPool->parity[pair].heap[heaps].par[i]]);
+                solve_link(&parlist[parPool->parity[pair].heap[heaps].par[i]]);
 
-                if (parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum > 1) {
-                    parlist[parPool[0].parity[pair].heap[heaps].par[i]].neighboursnum = 0;
+                if (parlist[parPool->parity[pair].heap[heaps].par[i]].neighboursnum > 1) {
+                    parlist[parPool->parity[pair].heap[heaps].par[i]].neighboursnum = 0;
                 }
             }
         }
@@ -228,15 +228,15 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     for (pair=0; pair<2; pair++) {
 
-        for (heaps=0; heaps<(int)(parPool[0].max * scale) + 1; heaps++) {
-            parPool[0].parity[pair].heap[heaps].parnum = 0;
-            free(parPool[0].parity[pair].heap[heaps].par);
+        for (heaps=0; heaps<(int)(parPool->max * scale) + 1; heaps++) {
+            parPool->parity[pair].heap[heaps].parnum = 0;
+            free(parPool->parity[pair].heap[heaps].par);
         }
 
-        free(parPool[0].parity[pair].heap);
+        free(parPool->parity[pair].heap);
     }
 
-    free(parPool[0].parity);
+    free(parPool->parity);
     free(parPool);
 
     if (profiling == 1) {
