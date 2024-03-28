@@ -1,5 +1,6 @@
 static PyObject* simulate(PyObject *self, PyObject *args) {
 
+    // parse import data
     PyObject* importdata;
 
     int parse_result = PyArg_ParseTuple(args, "O", &importdata);
@@ -8,17 +9,18 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    int profiling = 1;
+    // min particles coordinate
+    float min_x = +INT_MAX;
+    float min_y = +INT_MAX;
+    float min_z = +INT_MAX;
 
-    float minX = +INT_MAX;
-    float minY = +INT_MAX;
-    float minZ = +INT_MAX;
+    // max particles coordinate
+    float max_x = -INT_MAX;
+    float max_y = -INT_MAX;
+    float max_z = -INT_MAX;
 
-    float maxX = -INT_MAX;
-    float maxY = -INT_MAX;
-    float maxZ = -INT_MAX;
-
-    float maxSize = -INT_MAX;
+    // max particle link length
+    float link_max_size = -INT_MAX;
 
     clock_t stime2;
     clock_t stime;
@@ -33,18 +35,15 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     newlinks = 0;
     deadlinks = 0;
 
-    if (profiling == 1) {
-        printf("-->start simulate\n");
-        stime2 = clock();
-        stime = clock();
-    }
+    printf("-->start simulate\n");
+    stime2 = clock();
+    stime = clock();
 
+    // update import data
     update(importdata);
 
-    if (profiling == 1) {
-        printf("-->update time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        stime = clock();
-    }
+    printf("-->update time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    stime = clock();
 
     int par_index = 0;
 
@@ -59,68 +58,68 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
         // search min/max coordinates
 
-        if (parlist[par_index].loc[0] < minX) {
-            minX = parlist[par_index].loc[0];
+        if (parlist[par_index].loc[0] < min_x) {
+            min_x = parlist[par_index].loc[0];
         }
 
-        if (parlist[par_index].loc[0] > maxX) {
-            maxX = parlist[par_index].loc[0];
+        if (parlist[par_index].loc[0] > max_x) {
+            max_x = parlist[par_index].loc[0];
         }
 
-        if (parlist[par_index].loc[1] < minY) {
-            minY = parlist[par_index].loc[1];
+        if (parlist[par_index].loc[1] < min_y) {
+            min_y = parlist[par_index].loc[1];
         }
 
-        if (parlist[par_index].loc[1] > maxY) {
-            maxY = parlist[par_index].loc[1];
+        if (parlist[par_index].loc[1] > max_y) {
+            max_y = parlist[par_index].loc[1];
         }
 
-        if (parlist[par_index].loc[2] < minZ) {
-            minZ = parlist[par_index].loc[2];
+        if (parlist[par_index].loc[2] < min_z) {
+            min_z = parlist[par_index].loc[2];
         }
 
-        if (parlist[par_index].loc[2] > maxZ) {
-            maxZ = parlist[par_index].loc[2];
+        if (parlist[par_index].loc[2] > max_z) {
+            max_z = parlist[par_index].loc[2];
         }
 
         if (parlist[par_index].sys->links_active == 1 && parlist[par_index].links_num > 0) {
             for (int link_index=0; link_index<parlist[par_index].links_num; link_index++) {
-                if (parlist[par_index].links[link_index].lenght > maxSize) {
-                    maxSize = parlist[par_index].links[link_index].lenght;
+                if (parlist[par_index].links[link_index].lenght > link_max_size) {
+                    link_max_size = parlist[par_index].links[link_index].lenght;
                 }
             }
         }
 
-        if (parlist[par_index].size * 2 > maxSize) {
-            maxSize = parlist[par_index].size * 2;
+        if (parlist[par_index].size * 2 > link_max_size) {
+            link_max_size = parlist[par_index].size * 2;
         }
     }
 
-    if ((maxX - minX) >= (maxY - minY) && (maxX - minX) >= (maxZ - minZ)) {
+    if ((max_x - min_x) >= (max_y - min_y) && (max_x - min_x) >= (max_z - min_z)) {
         parPool->axis = 0;
-        parPool->offset = 0 - minX;
-        parPool->max = maxX + parPool->offset;
+        parPool->offset = 0 - min_x;
+        parPool->max = max_x + parPool->offset;
     }
 
-    if ((maxY - minY) > (maxX - minX) && (maxY - minY) > (maxZ - minZ)) {
+    if ((max_y - min_y) > (max_x - min_x) && (max_y - min_y) > (max_z - min_z)) {
         parPool->axis = 1;
-        parPool->offset = 0 - minY;
-        parPool->max = maxY + parPool->offset;
+        parPool->offset = 0 - min_y;
+        parPool->max = max_y + parPool->offset;
     }
 
-    if ((maxZ - minZ) > (maxY - minY) && (maxZ - minZ) > (maxX - minX)) {
+    if ((max_z - min_z) > (max_y - min_y) && (max_z - min_z) > (max_x - min_x)) {
         parPool->axis = 2;
-        parPool->offset = 0 - minZ;
-        parPool->max = maxZ + parPool->offset;
+        parPool->offset = 0 - min_z;
+        parPool->max = max_z + parPool->offset;
     }
 
-    if (parPool->max / 10 > maxSize) {
-        maxSize = parPool->max / 10;
+    if (parPool->max / 10 > link_max_size) {
+        link_max_size = parPool->max / 10;
     }
 
     int pair;
     int heaps;
-    float scale = 1 / (maxSize*2.1);
+    float scale = 1 / (link_max_size * 2.1);
 
     for (pair=0; pair<2; pair++) {
 
@@ -133,7 +132,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         }
     }
 
-    for (int par_index=0; par_index<parnum; par_index++) {
+    for (par_index=0; par_index<parnum; par_index++) {
         pair = (int)((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale) % 2;
         heaps = (int) ((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale);
         parPool->parity[pair].heap[heaps].parnum += 1;
@@ -146,10 +145,10 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         parPool->parity[pair].heap[heaps].par[(parPool->parity[pair].heap[heaps].parnum - 1)] = parlist[par_index].id;
     }
 
-    if (profiling == 1) {
-        printf("-->copy data time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        stime = clock();
-    }
+    printf("-->copy data time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    stime = clock();
+
+    // kd-tree
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
 
@@ -160,26 +159,24 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         KDTree_create_tree(kdtree, parlistcopy, kdtree->thread_start[i], kdtree->thread_end[i], kdtree->thread_name[i], kdtree->thread_parent[i], kdtree->thread_depth[i], 0);
     }
 
-    if (profiling == 1) {
-        printf("-->create tree time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        stime = clock();
-    }
+    printf("-->create tree time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    stime = clock();
 
     #pragma omp parallel for schedule(dynamic, 10)
     for (par_index=0; par_index<parnum; par_index++) {
         KDTree_rnn_query(kdtree, &parlist[par_index], parlist[par_index].loc, parlist[par_index].size * 2);
     }
 
-    if (profiling == 1) {
-        printf("-->neighbours time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        stime = clock();
-    }
+    printf("-->neighbours time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    stime = clock();
+
+    // simulation
 
     for (pair=0; pair<2; pair++) {
 
         for (heaps=0; heaps<(int)(parPool->max * scale) + 1; heaps++) {
 
-            for (int par_index=0; par_index<parPool->parity[pair].heap[heaps].parnum; par_index++) {
+            for (par_index=0; par_index<parPool->parity[pair].heap[heaps].parnum; par_index++) {
 
                 collide(&parlist[parPool->parity[pair].heap[heaps].par[par_index]]);
                 solve_link(&parlist[parPool->parity[pair].heap[heaps].par[par_index]]);
@@ -191,10 +188,10 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         }
     }
 
-    if (profiling == 1) {
-        printf("-->collide/solve link time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        stime = clock();
-    }
+    printf("-->collide/solve link time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    stime = clock();
+
+    // export
 
     PyObject *exportdata = PyList_New(0);
     PyObject *parvel = PyList_New(0);
@@ -238,11 +235,9 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     free(parPool->parity);
     free(parPool);
 
-    if (profiling == 1) {
-        printf("-->export time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-        printf("-->all process time %.3f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
-        printf("\n");
-    }
+    printf("-->export time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    printf("-->all process time %.3f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
+    printf("\n");
 
     return exportdata;
 }

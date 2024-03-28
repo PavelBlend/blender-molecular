@@ -25,7 +25,6 @@ static PyObject* init(PyObject *self, PyObject *args) {
     int ii = 0;
     int jj = 0;
     int index = 0;
-    int profiling = 0;
 
     newlinks = 0;
     totallinks = 0;
