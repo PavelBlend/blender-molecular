@@ -133,7 +133,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     for (par_index=0; par_index<parnum; par_index++) {
-        pair = (int)((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale) % 2;
+        pair  = (int) ((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale) % 2;
         heaps = (int) ((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale);
         parPool->parity[pair].heap[heaps].parnum += 1;
 
