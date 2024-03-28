@@ -8,13 +8,11 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         return NULL;
     }
 
-    int i = 0;
-    int ii = 0;
     int profiling = 1;
 
-    float minX = INT_MAX;
-    float minY = INT_MAX;
-    float minZ = INT_MAX;
+    float minX = +INT_MAX;
+    float minY = +INT_MAX;
+    float minZ = +INT_MAX;
 
     float maxX = -INT_MAX;
     float maxY = -INT_MAX;
@@ -29,8 +27,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     parPool->parity = (Parity*) malloc(2 * sizeof(Parity));
     parPool->axis = -1;
-    parPool->offset = 0;
-    parPool->max = 0;
+    parPool->offset = 0.0;
+    parPool->max = 0.0;
 
     newlinks = 0;
     deadlinks = 0;
@@ -48,54 +46,53 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         stime = clock();
     }
 
+    int par_index = 0;
+
     #pragma omp parallel for
-    for (i=0; i<parnum; i++) {
+    for (par_index=0; par_index<parnum; par_index++) {
 
-        parlistcopy[i].id = parlist[i].id;
-        parlistcopy[i].loc[0] = parlist[i].loc[0];
+        parlistcopy[par_index].id = parlist[par_index].id;
 
-        if (parlist[i].loc[0] < minX) {
-            minX = parlist[i].loc[0];
+        parlistcopy[par_index].loc[0] = parlist[par_index].loc[0];
+        parlistcopy[par_index].loc[1] = parlist[par_index].loc[1];
+        parlistcopy[par_index].loc[2] = parlist[par_index].loc[2];
+
+        // search min/max coordinates
+
+        if (parlist[par_index].loc[0] < minX) {
+            minX = parlist[par_index].loc[0];
         }
 
-        if (parlist[i].loc[0] > maxX) {
-            maxX = parlist[i].loc[0];
+        if (parlist[par_index].loc[0] > maxX) {
+            maxX = parlist[par_index].loc[0];
         }
 
-        parlistcopy[i].loc[1] = parlist[i].loc[1];
-
-        if (parlist[i].loc[1] < minY) {
-            minY = parlist[i].loc[1];
+        if (parlist[par_index].loc[1] < minY) {
+            minY = parlist[par_index].loc[1];
         }
 
-        if (parlist[i].loc[1] > maxY) {
-            maxY = parlist[i].loc[1];
+        if (parlist[par_index].loc[1] > maxY) {
+            maxY = parlist[par_index].loc[1];
         }
 
-        parlistcopy[i].loc[2] = parlist[i].loc[2];
-
-        if (parlist[i].loc[2] < minZ) {
-            minZ = parlist[i].loc[2];
+        if (parlist[par_index].loc[2] < minZ) {
+            minZ = parlist[par_index].loc[2];
         }
 
-        if (parlist[i].loc[2] > maxZ) {
-            maxZ = parlist[i].loc[2];
+        if (parlist[par_index].loc[2] > maxZ) {
+            maxZ = parlist[par_index].loc[2];
         }
 
-        if (parlist[i].sys->links_active == 1) {
-            if (parlist[i].links_num > 0) {
-
-                for (ii=0; ii<parlist[i].links_num; ii++) {
-                    if (parlist[i].links[ii].lenght > maxSize) {
-                        maxSize = parlist[i].links[ii].lenght;
-                    }
+        if (parlist[par_index].sys->links_active == 1 && parlist[par_index].links_num > 0) {
+            for (int link_index=0; link_index<parlist[par_index].links_num; link_index++) {
+                if (parlist[par_index].links[link_index].lenght > maxSize) {
+                    maxSize = parlist[par_index].links[link_index].lenght;
                 }
-
             }
         }
 
-        if (parlist[i].size*2 > maxSize) {
-            maxSize = parlist[i].size * 2;
+        if (parlist[par_index].size * 2 > maxSize) {
+            maxSize = parlist[par_index].size * 2;
         }
     }
 
@@ -136,9 +133,9 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         }
     }
 
-    for (i=0; i<parnum; i++) {
-        pair = (int)((parlist[i].loc[parPool->axis] + parPool->offset) * scale) % 2;
-        heaps = (int) ((parlist[i].loc[parPool->axis] + parPool->offset) * scale);
+    for (int par_index=0; par_index<parnum; par_index++) {
+        pair = (int)((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale) % 2;
+        heaps = (int) ((parlist[par_index].loc[parPool->axis] + parPool->offset) * scale);
         parPool->parity[pair].heap[heaps].parnum += 1;
 
         if (parPool->parity[pair].heap[heaps].parnum > parPool->parity[pair].heap[heaps].maxalloc) {
@@ -146,7 +143,7 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
             parPool->parity[pair].heap[heaps].par = (int*) realloc(parPool->parity[pair].heap[heaps].par, (parPool->parity[pair].heap[heaps].maxalloc + 2) * sizeof(int));
         }
 
-        parPool->parity[pair].heap[heaps].par[(parPool->parity[pair].heap[heaps].parnum - 1)] = parlist[i].id;
+        parPool->parity[pair].heap[heaps].par[(parPool->parity[pair].heap[heaps].parnum - 1)] = parlist[par_index].id;
     }
 
     if (profiling == 1) {
@@ -155,6 +152,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
+
+    int i = 0;
 
     #pragma omp parallel for schedule(dynamic, 10)
     for (i=0; i<kdtree->thread_index; i++) {
@@ -167,8 +166,8 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     }
 
     #pragma omp parallel for schedule(dynamic, 10)
-    for (i=0; i<parnum; i++) {
-        KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].size * 2);
+    for (par_index=0; par_index<parnum; par_index++) {
+        KDTree_rnn_query(kdtree, &parlist[par_index], parlist[par_index].loc, parlist[par_index].size * 2);
     }
 
     if (profiling == 1) {
@@ -180,13 +179,13 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
         for (heaps=0; heaps<(int)(parPool->max * scale) + 1; heaps++) {
 
-            for (i=0; i<parPool->parity[pair].heap[heaps].parnum; i++) {
+            for (int par_index=0; par_index<parPool->parity[pair].heap[heaps].parnum; par_index++) {
 
-                collide(&parlist[parPool->parity[pair].heap[heaps].par[i]]);
-                solve_link(&parlist[parPool->parity[pair].heap[heaps].par[i]]);
+                collide(&parlist[parPool->parity[pair].heap[heaps].par[par_index]]);
+                solve_link(&parlist[parPool->parity[pair].heap[heaps].par[par_index]]);
 
-                if (parlist[parPool->parity[pair].heap[heaps].par[i]].neighboursnum > 1) {
-                    parlist[parPool->parity[pair].heap[heaps].par[i]].neighboursnum = 0;
+                if (parlist[parPool->parity[pair].heap[heaps].par[par_index]].neighboursnum > 1) {
+                    parlist[parPool->parity[pair].heap[heaps].par[par_index]].neighboursnum = 0;
                 }
             }
         }
@@ -200,14 +199,14 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     PyObject *exportdata = PyList_New(0);
     PyObject *parvel = PyList_New(0);
 
-    for (i=0; i<psysnum; i++) {
-        PyObject *parveltmp = PyList_New(psys[i].parnum * 3);
+    for (int par_sys_index=0; par_sys_index<psysnum; par_sys_index++) {
+        PyObject *parveltmp = PyList_New(psys[par_sys_index].parnum * 3);
 
-        for (ii=0; ii<psys[i].parnum; ii++) {
+        for (int par_index=0; par_index<psys[par_sys_index].parnum; par_index++) {
 
-            PyList_SetItem(parveltmp, ii*3,     Py_BuildValue("f", psys[i].particles[ii].vel[0]));
-            PyList_SetItem(parveltmp, ii*3 + 1, Py_BuildValue("f", psys[i].particles[ii].vel[1]));
-            PyList_SetItem(parveltmp, ii*3 + 2, Py_BuildValue("f", psys[i].particles[ii].vel[2]));
+            PyList_SetItem(parveltmp, par_index*3,     Py_BuildValue("f", psys[par_sys_index].particles[par_index].vel[0]));
+            PyList_SetItem(parveltmp, par_index*3 + 1, Py_BuildValue("f", psys[par_sys_index].particles[par_index].vel[1]));
+            PyList_SetItem(parveltmp, par_index*3 + 2, Py_BuildValue("f", psys[par_sys_index].particles[par_index].vel[2]));
 
         }
 
