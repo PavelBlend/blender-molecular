@@ -4,7 +4,7 @@ bl_info = {
         'Jean-Francois Gallant (PyroEvil), '
         'Pavel_Blend, '
         'Martin Felke (scorpion81)',
-    'version': (1, 1, 2),
+    'version': (1, 2, 0),
     'blender': (2, 80, 0),
     'location': 'Properties > Particle Properties',
     'description':
