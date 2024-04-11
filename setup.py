@@ -4,16 +4,28 @@ import distutils.extension
 import distutils.core
 
 
+DEBUG = False
+
+
 env_path = 'BLENDER_USER_ADDON_PATH'
 
 if os.path.exists('build'):
     shutil.rmtree('build')
 
-module = distutils.extension.Extension(
-    'core',
-    sources=['core\\main.c'],
-    extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast']
-)
+if DEBUG:    # create *.pdb files
+    module = distutils.extension.Extension(
+        'core',
+        sources=['core\\main.c'],
+        extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast', '\Zi'],
+        extra_link_args=['/DEBUG']
+    )
+
+else:
+    module = distutils.extension.Extension(
+        'core',
+        sources=['core\\main.c'],
+        extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast']
+    )
 
 distutils.core.setup(
     name='Molecular Core',
