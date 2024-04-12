@@ -1,3 +1,7 @@
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
+//#include "main.c"
 static PyObject* simulate(PyObject *self, PyObject *args) {
 
     // parse import data
@@ -25,9 +29,14 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     clock_t stime2;
     clock_t stime;
 
-    Pool *parPool = (Pool*) malloc(sizeof(Pool));
+    Pool *parPool;
+    Parity *parity;
 
-    parPool->parity = (Parity*) malloc(2 * sizeof(Parity));
+    parPool = safe_malloc(sizeof(Pool), "parPool");
+    parity = safe_malloc(2 * sizeof(Parity), "parity");
+
+    parPool->parity = parity;
+
     parPool->axis = -1;
     parPool->offset = 0.0;
     parPool->max = 0.0;
@@ -35,19 +44,11 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     newlinks = 0;
     deadlinks = 0;
 
-    printf("-->start simulate\n");
-    stime2 = clock();
-    stime = clock();
-
     // update import data
     update(importdata);
 
-    printf("-->update time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    stime = clock();
-
     int par_index = 0;
 
-    #pragma omp parallel for
     for (par_index=0; par_index<parnum; par_index++) {
 
         parlistcopy[par_index].id = parlist[par_index].id;
@@ -123,12 +124,12 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     for (pair=0; pair<2; pair++) {
 
-        parPool->parity[pair].heap = (Heap*) malloc(((int)(parPool->max * scale) + 1) * sizeof(Heap));
+        parPool->parity[pair].heap = safe_malloc(((int)(parPool->max * scale) + 1) * sizeof(Heap), "parPool->parity[pair].heap");
 
         for (heaps=0; heaps<(int)(parPool->max * scale) + 1; heaps++) {
             parPool->parity[pair].heap[heaps].parnum = 0;
             parPool->parity[pair].heap[heaps].maxalloc = 50;
-            parPool->parity[pair].heap[heaps].par = (int*) malloc(parPool->parity[pair].heap[heaps].maxalloc * sizeof(int));
+            parPool->parity[pair].heap[heaps].par = safe_malloc(parPool->parity[pair].heap[heaps].maxalloc * sizeof(int), "parPool->parity[pair].heap[heaps].par");
         }
     }
 
@@ -139,14 +140,17 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
         if (parPool->parity[pair].heap[heaps].parnum > parPool->parity[pair].heap[heaps].maxalloc) {
             parPool->parity[pair].heap[heaps].maxalloc = (int) (parPool->parity[pair].heap[heaps].maxalloc * 1.25);
-            parPool->parity[pair].heap[heaps].par = (int*) realloc(parPool->parity[pair].heap[heaps].par, (parPool->parity[pair].heap[heaps].maxalloc + 2) * sizeof(int));
+            int* new_par = (int*) realloc(parPool->parity[pair].heap[heaps].par, (parPool->parity[pair].heap[heaps].maxalloc + 2) * sizeof(int));
+            if (new_par == NULL) {
+                fprintf(stderr, "Memory reallocation failed for parPool->parity[%d].heap[%d].par\n", pair, heaps);
+                exit(1);
+            }
+            
+            parPool->parity[pair].heap[heaps].par = new_par;
         }
 
         parPool->parity[pair].heap[heaps].par[(parPool->parity[pair].heap[heaps].parnum - 1)] = parlist[par_index].id;
     }
-
-    printf("-->copy data time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    stime = clock();
 
     // kd-tree
 
@@ -159,16 +163,12 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
         KDTree_create_tree(kdtree, parlistcopy, kdtree->thread_start[i], kdtree->thread_end[i], kdtree->thread_name[i], kdtree->thread_parent[i], kdtree->thread_depth[i], 0);
     }
 
-    printf("-->create tree time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    stime = clock();
-
     #pragma omp parallel for schedule(dynamic, 10)
     for (par_index=0; par_index<parnum; par_index++) {
         KDTree_rnn_query(kdtree, &parlist[par_index], parlist[par_index].loc, parlist[par_index].size * 2);
     }
+    printf("E");
 
-    printf("-->neighbours time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    stime = clock();
 
     // simulation
 
@@ -187,9 +187,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
             }
         }
     }
-
-    printf("-->collide/solve link time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    stime = clock();
 
     // export
 
@@ -235,9 +232,11 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     free(parPool->parity);
     free(parPool);
 
-    printf("-->export time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    printf("-->all process time %.3f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
-    printf("\n");
+    // printf("-->export time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
+    // printf("-->all process time %.3f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
+    // printf("\n");
+
+    //_CrtDumpMemoryLeaks();
 
     return exportdata;
 }
