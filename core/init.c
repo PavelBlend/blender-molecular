@@ -40,10 +40,11 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
     deltatime = fps * (float)(substep);
 
-    psys = (ParSys*) malloc(psysnum * sizeof(ParSys));
-    parlist = (Particle*) malloc(parnum * sizeof(Particle));
-    parlistcopy = (SParticle*) malloc(parnum * sizeof(SParticle));
-    par_id_list = (int*) malloc(parnum * sizeof(int));
+    psys = safe_malloc(psysnum * sizeof(ParSys), "psys");
+    parlist = safe_malloc(parnum * sizeof(Particle), "parlist");
+    parlistcopy = safe_malloc(parnum * sizeof(SParticle), "parlistcopy");
+    par_id_list = safe_malloc(parnum * sizeof(int), "par_id_list");
+
 
     for (i=0; i<psysnum; i++) {
 
@@ -51,7 +52,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
         psys[i].id = i;
         psys[i].parnum = PyLong_AsLongLong(PyList_GetItem(psys_props, 0));
-        psys[i].particles = (Particle*) malloc(psys[i].parnum * sizeof(Particle));
+        psys[i].particles = safe_malloc(psys[i].parnum * sizeof(Particle), "psys[i].particles");
         psys[i].particles = &parlist[jj];
 
         PyObject* psys_settings = PyList_GetItem(psys_props, 6);
@@ -130,20 +131,20 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
             parlist[jj].sys = &psys[i];
 
-            parlist[jj].collided_with = (int*) malloc(sizeof(int));
+            parlist[jj].collided_with = safe_malloc(sizeof(int), "parlist[jj].collided_with");
             parlist[jj].collided_num = 0;
 
-            parlist[jj].links = (Links*) malloc(sizeof(Links));
+            parlist[jj].links = safe_malloc(sizeof(Links), "parlist[jj].links");
             parlist[jj].links_num = 0;
 
             parlist[jj].links_activnum = 0;
 
-            parlist[jj].link_with = (int*) malloc(sizeof(int));
+            parlist[jj].link_with = safe_malloc(sizeof(int), "parlist[jj].link_with");
             parlist[jj].link_withnum = 0;
 
             parlist[jj].neighboursmax = 10;
 
-            parlist[jj].neighbours = (int*) malloc(parlist[jj].neighboursmax * sizeof(int));
+            parlist[jj].neighbours = safe_malloc(parlist[jj].neighboursmax * sizeof(int), "parlist[jj].neighbours");
             parlist[jj].neighboursnum = 0;
 
             jj += 1;
@@ -151,7 +152,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
     }
 
     jj = 0;
-    kdtree = (KDTree*) malloc(sizeof(KDTree));
+    kdtree = safe_malloc(sizeof(KDTree), "kdtree");
     KDTree_create_nodes(kdtree, parnum);
 
     #pragma omp parallel for schedule(dynamic, 10)
