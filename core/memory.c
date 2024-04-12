@@ -102,3 +102,13 @@ static PyObject* memfree(PyObject *self, PyObject *args) {
 
     return PyLong_FromLong(0);
 }
+
+
+void* safe_malloc(size_t size, const char* var_name) {
+    void* ptr = malloc(size);
+    if (ptr == NULL) {
+        fprintf(stderr, "Memory allocation failed for %s\n", var_name);
+        exit(1);
+    }
+    return ptr;
+}
