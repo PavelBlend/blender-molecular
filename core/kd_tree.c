@@ -123,30 +123,32 @@ void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     }
 
     kdtree->numnodes = i;
-    kdtree->nodes = (Node*) malloc((kdtree->numnodes + 1) * sizeof(Node));
-    kdtree->root_node = (Node*) malloc(sizeof(Node));
+    kdtree->nodes = safe_malloc((kdtree->numnodes + 1) * sizeof(Node), "kdtree->nodes");
+    kdtree->root_node = safe_malloc(sizeof(Node), "kdtree->root_node");
+
 
     for (int i=0; i<=kdtree->numnodes; i++) {
         kdtree->nodes[i].index = i;
         kdtree->nodes[i].name = -1;
         kdtree->nodes[i].parent = -1;
 
-        kdtree->nodes[i].particle = (SParticle*) malloc(sizeof(SParticle));
+        kdtree->nodes[i].particle = safe_malloc(sizeof(SParticle), "kdtree->nodes[i].particle");
+        kdtree->nodes[i].left_child = safe_malloc(sizeof(Node), "kdtree->nodes[i].left_child");
+        kdtree->nodes[i].right_child = safe_malloc(sizeof(Node), "kdtree->nodes[i].right_child");
 
-        kdtree->nodes[i].left_child = (Node*) malloc(sizeof(Node));
-        kdtree->nodes[i].right_child = (Node*) malloc(sizeof(Node));
         kdtree->nodes[i].left_child[0].index = -1;
         kdtree->nodes[i].right_child[0].index = -1;
     }
 
     kdtree->nodes[kdtree->numnodes].index = -1;
 
-    kdtree->thread_nodes = (int*) malloc(128 * sizeof(int));
-    kdtree->thread_start = (int*) malloc(128 * sizeof(int));
-    kdtree->thread_end = (int*) malloc(128 * sizeof(int));
-    kdtree->thread_name = (int*) malloc(128 * sizeof(int));
-    kdtree->thread_parent = (int*) malloc(128 * sizeof(int));
-    kdtree->thread_depth = (int*) malloc(128 * sizeof(int));
+    kdtree->thread_nodes = safe_malloc(128 * sizeof(int), "kdtree->thread_nodes");
+    kdtree->thread_start = safe_malloc(128 * sizeof(int), "kdtree->thread_start");
+    kdtree->thread_end = safe_malloc(128 * sizeof(int), "kdtree->thread_end");
+    kdtree->thread_name = safe_malloc(128 * sizeof(int), "kdtree->thread_name");
+    kdtree->thread_parent = safe_malloc(128 * sizeof(int), "kdtree->thread_parent");
+    kdtree->thread_depth = safe_malloc(128 * sizeof(int), "kdtree->thread_depth");
+
 
     for (int i=0; i<64; i++) {
         kdtree->axis[i] = i % 3;
