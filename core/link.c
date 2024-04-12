@@ -46,8 +46,9 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
     Particle *par = NULL;
     Particle *par2 = NULL;
     Particle *fakepar = NULL;
-    Links *link = (Links*) malloc(sizeof(Links));
-    fakepar = (Particle*) malloc(sizeof(Particle));
+    Links *link = (Links*) safe_malloc(sizeof(Links), "link");
+    fakepar = (Particle*) safe_malloc(sizeof(Particle), "fakepar");
+
     par = &parlist[par_id];
 
     if (par->state >= 2) {
@@ -67,7 +68,7 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
         neighboursnum = par->neighboursnum;
 
     } else {
-        neighbours = (int*) malloc(sizeof(int));
+        neighbours = safe_malloc(sizeof(int), "neighbours");
         neighbours[0] = parothers_id;
         neighboursnum = 1;
     }
@@ -199,8 +200,8 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
         }
     }
 
-    free(fakepar);
     free(link);
+    free(fakepar);
 
     if (parothers_id != -1) {
         free(neighbours);
