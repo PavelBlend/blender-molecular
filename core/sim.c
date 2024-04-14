@@ -1,7 +1,3 @@
-//#define _CRTDBG_MAP_ALLOC
-//#include <stdlib.h>
-//#include <crtdbg.h>
-//#include "main.c"
 static PyObject* simulate(PyObject *self, PyObject *args) {
 
     // parse import data
@@ -26,12 +22,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
     // max particle link length
     float link_max_size = -INT_MAX;
 
-    // clock_t stime2;
-    // clock_t stime;
-
-    //Pool *parPool = (Pool*) malloc(sizeof(Pool));
-
-    //parPool->parity = (Parity*) malloc(2 * sizeof(Parity));
     Pool *parPool;
     Parity *parity;
 
@@ -256,12 +246,6 @@ static PyObject* simulate(PyObject *self, PyObject *args) {
 
     free(parPool->parity);
     free(parPool);
-
-    // printf("-->export time %.3f sec\n", (double)(clock() - stime) / CLOCKS_PER_SEC);
-    // printf("-->all process time %.3f sec\n", (double)(clock() - stime2) / CLOCKS_PER_SEC);
-    // printf("\n");
-
-    //_CrtDumpMemoryLeaks();
 
     return exportdata;
 }
