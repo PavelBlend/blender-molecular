@@ -76,7 +76,7 @@ void collide(Particle *par) {
             }
 
             stiff = deltatime;
-            target = (par->size + par2->size) * 0.999;
+            target = (float)((par->size + par2->size) * 0.999);
             sqtarget = target * target;
 
             if (check == 0 && par2->state <= 1 && arraysearch(par2->id, par->link_with, par->link_withnum) == -1 && arraysearch(par->id, par2->link_with, par2->link_withnum) == -1) {
@@ -88,7 +88,7 @@ void collide(Particle *par) {
                 sqlenght = square_dist(par->loc, par2->loc, 3);
 
                 if (sqlenght != 0 && sqlenght < sqtarget) {
-                    lenght = pow(sqlenght, 0.5);
+                    lenght = (float)pow(sqlenght, 0.5);
                     invlenght = 1 / lenght;
                     factor = (lenght - target) * invlenght;
                     ratio1 = par2->mass / (par->mass + par2->mass);
@@ -135,11 +135,11 @@ void collide(Particle *par) {
                     xi_vel[1] = par2->vel[1] - yi_vel[1];
                     xi_vel[2] = par2->vel[2] - yi_vel[2];
 
-                    friction1 = 1 - ((par->sys->friction + par2->sys->friction) * 0.5) * ratio1;
-                    friction2 = 1 - ((par->sys->friction + par2->sys->friction) * 0.5) * ratio2;
+                    friction1 = (float)(1 - ((par->sys->friction + par2->sys->friction) * 0.5) * ratio1);
+                    friction2 = (float)(1 - ((par->sys->friction + par2->sys->friction) * 0.5) * ratio2);
 
-                    damping1 = 1 - ((par->sys->collision_damp + par2->sys->collision_damp) * 0.5) * ratio1;
-                    damping2 = 1 - ((par->sys->collision_damp + par2->sys->collision_damp) * 0.5) * ratio2;
+                    damping1 = (float)(1 - ((par->sys->collision_damp + par2->sys->collision_damp) * 0.5) * ratio1);
+                    damping2 = 1 - (float)(((par->sys->collision_damp + par2->sys->collision_damp) * 0.5) * ratio2);
 
                     par->vel[0] = ((ypar_vel[0] * damping1) + (yi_vel[0] * (1 - damping1))) + ((xpar_vel[0] * friction1) + (xi_vel[0] * (1 - friction1)));
                     par->vel[1] = ((ypar_vel[1] * damping1) + (yi_vel[1] * (1 - damping1))) + ((xpar_vel[1] * friction1) + (xi_vel[1] * (1 - friction1)));
@@ -151,7 +151,8 @@ void collide(Particle *par) {
 
                     par2->collided_with[par2->collided_num] = par->id;
                     par2->collided_num += 1;
-                    par2->collided_with = (int*) realloc(par2->collided_with, (par2->collided_num + 1) * sizeof(int));
+
+                    par2->collided_with = safe_realloc(par2->collided_with, (par2->collided_num + 1) * sizeof(int));
 
                     if (((par->sys->relink_chance + par2->sys->relink_chance) / 2) > 0) {
                         create_link(par->id, par->sys->link_max * 2, 0, par2->id);

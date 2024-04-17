@@ -31,48 +31,54 @@ static PyObject* init(PyObject *self, PyObject *args) {
     totaldeadlinks = 0;
 
     fps = (float)PyFloat_AsDouble(PyList_GetItem(sim_settings, 0));
-    substep = PyLong_AsLongLong(PyList_GetItem(sim_settings, 1));
-    psysnum = PyLong_AsLongLong(PyList_GetItem(sim_settings, 2));
-    parnum = PyLong_AsLongLong(PyList_GetItem(sim_settings, 3));
-    cpunum = PyLong_AsLongLong(PyList_GetItem(sim_settings, 4));
+    substep = (int)PyLong_AsLongLong(PyList_GetItem(sim_settings, 1));
+    psysnum = (int)PyLong_AsLongLong(PyList_GetItem(sim_settings, 2));
+    parnum = (int)PyLong_AsLongLong(PyList_GetItem(sim_settings, 3));
+    cpunum = (int)PyLong_AsLongLong(PyList_GetItem(sim_settings, 4));
 
     omp_set_num_threads(cpunum);
 
     deltatime = fps * (float)(substep);
 
-    psys = (ParSys*) malloc(psysnum * sizeof(ParSys));
-    parlist = (Particle*) malloc(parnum * sizeof(Particle));
-    parlistcopy = (SParticle*) malloc(parnum * sizeof(SParticle));
-    par_id_list = (int*) malloc(parnum * sizeof(int));
+    // psys = (ParSys*) malloc(psysnum * sizeof(ParSys));
+    // parlist = (Particle*) malloc(parnum * sizeof(Particle));
+    // parlistcopy = (SParticle*) malloc(parnum * sizeof(SParticle));
+    // par_id_list = (int*) malloc(parnum * sizeof(int));
+    psys = (ParSys*)safe_malloc(psysnum * sizeof(ParSys), "psys");
+    parlist = (Particle*)safe_malloc(parnum * sizeof(Particle), "parlist");
+    parlistcopy = (SParticle*)safe_malloc(parnum * sizeof(SParticle), "parlistcopy");
+    par_id_list = (int*)safe_malloc(parnum * sizeof(int), "par_id_list");
+
 
     for (i=0; i<psysnum; i++) {
 
         PyObject* psys_props = PyList_GetItem(importdata, i+1);
 
         psys[i].id = i;
-        psys[i].parnum = PyLong_AsLongLong(PyList_GetItem(psys_props, 0));
-        psys[i].particles = (Particle*) malloc(psys[i].parnum * sizeof(Particle));
+        psys[i].parnum = (int)PyLong_AsLongLong(PyList_GetItem(psys_props, 0));
+        //psys[i].particles = (Particle*) malloc(psys[i].parnum * sizeof(Particle));
+        psys[i].particles = (Particle*)safe_malloc(psys[i].parnum * sizeof(Particle), "psys[i].particles");
         psys[i].particles = &parlist[jj];
 
         PyObject* psys_settings = PyList_GetItem(psys_props, 6);
 
-        psys[i].selfcollision_active    =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  0));
-        psys[i].othercollision_active   =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  1));
-        psys[i].collision_group         =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  2));
+        psys[i].selfcollision_active    = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings,  0));
+        psys[i].othercollision_active   = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings,  1));
+        psys[i].collision_group         = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings,  2));
         psys[i].friction                = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  3));
         psys[i].collision_damp          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  4));
 
-        psys[i].links_active            =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  5));
-        psys[i].other_link_active       =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  6));
-        psys[i].link_group              =       PyLong_AsLongLong(PyList_GetItem(psys_settings,  7));
+        psys[i].links_active            = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings,  5));
+        psys[i].other_link_active       = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings,  6));
+        psys[i].link_group              = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings,  7));
         psys[i].link_friction           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  8));
         psys[i].link_frictionrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings,  9));
-        psys[i].link_max                =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 10));
+        psys[i].link_max                = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings, 10));
         psys[i].link_length             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 11));
 
-        psys[i].link_stiff              = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 12)) * 0.5;
+        psys[i].link_stiff              = (float)(PyFloat_AsDouble(PyList_GetItem(psys_settings, 12)) * 0.5);
         psys[i].link_stiffrand          = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 13));
-        psys[i].link_estiff             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 14)) * 0.5;
+        psys[i].link_estiff             = (float)(PyFloat_AsDouble(PyList_GetItem(psys_settings, 14)) * 0.5);
         psys[i].link_estiffrand         = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 15));
 
         psys[i].link_damp               = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 16));
@@ -86,14 +92,14 @@ static PyObject* init(PyObject *self, PyObject *args) {
         psys[i].link_ebroken            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 22));
         psys[i].link_ebrokenrand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 23));
 
-        psys[i].relink_group            =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 24));
+        psys[i].relink_group            = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings, 24));
         psys[i].relink_chance           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 25));
         psys[i].relink_chancerand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 26));
-        psys[i].relink_max              =       PyLong_AsLongLong(PyList_GetItem(psys_settings, 27));
+        psys[i].relink_max              = (int)PyLong_AsLongLong(PyList_GetItem(psys_settings, 27));
 
-        psys[i].relink_stiff            = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 28)) * 0.5;
+        psys[i].relink_stiff            = (float)(PyFloat_AsDouble(PyList_GetItem(psys_settings, 28)) * 0.5);
         psys[i].relink_stiffrand        = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 29));
-        psys[i].relink_estiff           = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 30)) * 0.5;
+        psys[i].relink_estiff           = (float)(PyFloat_AsDouble(PyList_GetItem(psys_settings, 30)) * 0.5);
         psys[i].relink_estiffrand       = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 31));
 
         psys[i].relink_damp             = (float)PyFloat_AsDouble(PyList_GetItem(psys_settings, 32));
@@ -130,20 +136,36 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
             parlist[jj].sys = &psys[i];
 
-            parlist[jj].collided_with = (int*) malloc(sizeof(int));
+            // parlist[jj].collided_with = (int*) malloc(sizeof(int));
+            // parlist[jj].collided_num = 0;
+
+            // parlist[jj].links = (Links*) malloc(sizeof(Links));
+            // parlist[jj].links_num = 0;
+
+            // parlist[jj].links_activnum = 0;
+
+            // parlist[jj].link_with = (int*) malloc(sizeof(int));
+            // parlist[jj].link_withnum = 0;
+
+            // parlist[jj].neighboursmax = 10;
+
+            // parlist[jj].neighbours = (int*) malloc(parlist[jj].neighboursmax * sizeof(int));
+            // parlist[jj].neighboursnum = 0;
+
+            parlist[jj].collided_with = (int*)safe_malloc(sizeof(int), "parlist[jj].collided_with");
             parlist[jj].collided_num = 0;
 
-            parlist[jj].links = (Links*) malloc(sizeof(Links));
+            parlist[jj].links = (Links*)safe_malloc(sizeof(Links), "parlist[jj].links");
             parlist[jj].links_num = 0;
 
             parlist[jj].links_activnum = 0;
 
-            parlist[jj].link_with = (int*) malloc(sizeof(int));
+            parlist[jj].link_with = (int*)safe_malloc(sizeof(int), "parlist[jj].link_with");
             parlist[jj].link_withnum = 0;
 
             parlist[jj].neighboursmax = 10;
 
-            parlist[jj].neighbours = (int*) malloc(parlist[jj].neighboursmax * sizeof(int));
+            parlist[jj].neighbours = (int*)safe_malloc(parlist[jj].neighboursmax * sizeof(int), "parlist[jj].neighbours");
             parlist[jj].neighboursnum = 0;
 
             jj += 1;
@@ -151,40 +173,56 @@ static PyObject* init(PyObject *self, PyObject *args) {
     }
 
     jj = 0;
-    kdtree = (KDTree*) malloc(sizeof(KDTree));
+    //kdtree = (KDTree*) malloc(sizeof(KDTree));
+    kdtree = (KDTree*)safe_malloc(sizeof(KDTree), "kdtree");
     KDTree_create_nodes(kdtree, parnum);
 
-    #pragma omp parallel for schedule(dynamic, 10)
-    for (i=0; i<parnum; i++) {
-        parlistcopy[i].id = parlist[i].id;
-        parlistcopy[i].loc[0] = parlist[i].loc[0];
-        parlistcopy[i].loc[1] = parlist[i].loc[1];
-        parlistcopy[i].loc[2] = parlist[i].loc[2];
+    #pragma omp parallel
+    {
+        int i;
+        #pragma omp for schedule(dynamic, 10)
+        for (i=0; i<parnum; i++) {
+            parlistcopy[i].id = parlist[i].id;
+            parlistcopy[i].loc[0] = parlist[i].loc[0];
+            parlistcopy[i].loc[1] = parlist[i].loc[1];
+            parlistcopy[i].loc[2] = parlist[i].loc[2];
+        }
     }
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
 
-    #pragma omp parallel for schedule(dynamic, 10)
-    for (i=0; i<kdtree->thread_index; i++) {
-        KDTree_create_tree(
-            kdtree,
-            parlistcopy,
-            kdtree->thread_start[i],
-            kdtree->thread_end[i],
-            kdtree->thread_name[i],
-            kdtree->thread_parent[i],
-            kdtree->thread_depth[i],
-            0
-        );
-    }
-
-    #pragma omp parallel for schedule(dynamic, 10)
-    for (i=0; i<parnum; i++) {
-        if (parlist[i].sys->links_active == 1) {
-            KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].sys->link_length);
+    // #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel
+    {
+        int i;
+        #pragma omp for schedule(dynamic, 10)
+        for (i=0; i<kdtree->thread_index; i++) {
+            KDTree_create_tree(
+                kdtree,
+                parlistcopy,
+                kdtree->thread_start[i],
+                kdtree->thread_end[i],
+                kdtree->thread_name[i],
+                kdtree->thread_parent[i],
+                kdtree->thread_depth[i],
+                0
+            );
         }
     }
 
+    // #pragma omp parallel for schedule(dynamic, 10)
+    #pragma omp parallel
+    {
+        int i;
+        #pragma omp for schedule(dynamic, 10)
+        for (i=0; i<parnum; i++) {
+            if (parlist[i].sys->links_active == 1) {
+                KDTree_rnn_query(kdtree, &parlist[i], parlist[i].loc, parlist[i].sys->link_length);
+            }
+        }
+    }
+
+    // #pragma omp parallel for private(i)
     for (i=0; i<parnum; i++) {
         create_link(parlist[i].id, parlist[i].sys->link_max, 1, -1);
 

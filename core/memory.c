@@ -1,4 +1,5 @@
 static PyObject* memfree(PyObject *self, PyObject *args) {
+    printf("=============> Free Memory");
     int i = 0;
 
     fps = 0;
@@ -101,4 +102,22 @@ static PyObject* memfree(PyObject *self, PyObject *args) {
     kdtree = NULL;
 
     return PyLong_FromLong(0);
+}
+
+void* safe_malloc(size_t size, const char* var_name) {
+    void* ptr = malloc(size);
+    if (ptr == NULL) {
+        fprintf(stderr, "Memory allocation failed for %s\n", var_name);
+        exit(1);
+    }
+    return ptr;
+}
+
+int* safe_realloc(int* ptr, size_t size) {
+    int* new_ptr = (int*) realloc(ptr, size);
+    if (new_ptr == NULL) {
+        fprintf(stderr, "Memory reallocation failed\n");
+        exit(1);
+    }
+    return new_ptr;
 }
