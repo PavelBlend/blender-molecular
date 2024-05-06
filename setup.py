@@ -15,17 +15,16 @@ if os.path.exists('build'):
 if DEBUG:    # create *.pdb files
     module = distutils.extension.Extension(
         'core',
-        sources=['core\\simulation.c'],
-        extra_compile_args=['/O2', '/openmp:llvm', '/GT', '/Zi', '/MTd'],
+        sources=['core\\main.c'],
+        extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast', '\Zi'],
         extra_link_args=['/DEBUG']
     )
 
 else:
     module = distutils.extension.Extension(
         'core',
-        sources=['core\\simulation.c'],
-        extra_compile_args=['/Ox', '/openmp:llvm', '/GT', '/fp:fast', '/MT'],
-        extra_link_args=['/release']
+        sources=['core\\main.c'],
+        extra_compile_args=['/Ox', '/openmp', '/GT', '/fp:fast']
     )
 
 distutils.core.setup(
