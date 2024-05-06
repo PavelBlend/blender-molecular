@@ -118,6 +118,7 @@ Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end
 
 }
 
+
 void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     int i = 2;
 
@@ -126,9 +127,9 @@ void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     }
 
     kdtree->numnodes = i;
+
     kdtree->nodes = (Node*)safe_malloc((kdtree->numnodes + 1) * sizeof(Node), "kdtree-nodes");
     kdtree->root_node = (Node*)safe_malloc(sizeof(Node), "kdtree-root_node");
-
 
     for (int i=0; i<=kdtree->numnodes; i++) {
         kdtree->nodes[i].index = i;
