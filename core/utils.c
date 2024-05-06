@@ -18,6 +18,11 @@ void quick_sort(SParticle *a, int n, int axis) {
     SParticle *r = a + n - 1;
 
     while (l <= r) {
+        if (l < a || l >= a + n) {
+            printf("Out-of-bounds access: l is outside the array a.\n");
+            break;
+        }
+
         if (l[0].loc[axis] < p) {
             l += 1;
             continue;
@@ -46,7 +51,6 @@ void quick_sort(SParticle *a, int n, int axis) {
     quick_sort(a, (int)(r - a + 1), axis);
     quick_sort(l, (int)(a + n - l), axis);
 }
-
 
 int arraysearch(int element, int *array, int len) {
 
