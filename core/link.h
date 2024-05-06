@@ -1,16 +1,18 @@
-void create_link(int par_id, int max_link, int init, int parothers_id) {
+// Thread-local storage for the random number state
+// __declspec(thread) unsigned int rand_state;
+
+void create_link(int par_id, int max_link, int parothers_id) {
 
     int ii = 0;
     int neighboursnum = 0;
     int create_links;
-    int p_id;
 
     int *neighbours = NULL;
 
     float link_friction_1 = 0.0;
     float link_friction_2 = 0.0;
-    float link_tension_1 = 0.0;
-    float link_tension_2 = 0.0;
+    // float link_tension_1 = 0.0;
+    // float link_tension_2 = 0.0;
     float link_stiff_1 = 0.0;
     float link_stiff_2 = 0.0;
     float link_estiff_1 = 0.0;
@@ -23,13 +25,9 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
     float link_broken_2 = 0.0;
     float link_ebroken_1 = 0.0;
     float link_ebroken_2 = 0.0;
-    float tension = 0.0;
-
     float relink_chance_1 = 0.0;
     float relink_chance_2 = 0.0;
     float relink_random = 0.0;
-    float relink_tension_1 = 0.0;
-    float relink_tension_2 = 0.0;
     float relink_stiff_1 = 0.0;
     float relink_stiff_2 = 0.0;
     float relink_estiff_1 = 0.0;
@@ -46,8 +44,6 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
     Particle *par = NULL;
     Particle *par2 = NULL;
     Particle *fakepar = NULL;
-    // Links *link = (Links*) malloc(sizeof(Links));
-    // fakepar = (Particle*) malloc(sizeof(Particle));
     Links *link = (Links*) safe_malloc(sizeof(Links), "link");
     fakepar = (Particle*) safe_malloc(sizeof(Particle), "fakepar");
 
@@ -70,14 +66,12 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
         neighboursnum = par->neighboursnum;
 
     } else {
-        //neighbours = (int*) malloc(sizeof(int));
         neighbours = (int*)safe_malloc(sizeof(int), "neighbours");
         neighbours[0] = parothers_id;
         neighboursnum = 1;
     }
 
     link->start = par->id;
-    p_id = par_id_list[par->id];
 
     link_friction_1 = randomize_value(par->sys->link_friction, par->sys->link_frictionrand);
     link_stiff_1 = randomize_value(par->sys->link_stiff, par->sys->link_stiffrand);
@@ -95,7 +89,6 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
     relink_ebroken_1 = randomize_value(par->sys->relink_ebroken, par->sys->relink_ebrokenrand);
 
     for (ii=0; ii<neighboursnum; ii++) {
-
         if (par->links_activnum >= max_link) {
             break;
         }
@@ -131,7 +124,7 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
                     }
 
                     if (create_links == 1) {
-                        link->lenght = (float)pow(square_dist(par->loc, par2->loc, 3), 0.5);
+                        link->lenght = (float)sqrt(square_dist(par->loc, par2->loc, 3));
                         link->stiffness = average_value(link_stiff_1, link_stiff_2);
                         link_estiff_2 = randomize_value(par2->sys->link_estiff, par2->sys->link_estiffrand);
                         link->estiffness = average_value(link_estiff_1, link_estiff_2);
@@ -149,20 +142,26 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
                         par->links[par->links_num] = link[0];
                         par->links_num += 1;
                         par->links_activnum += 1;
-                        par->links = (Links*) realloc(par->links,(par->links_num + 2) * sizeof(Links));
-                        if (par->links == NULL) {
-                            fprintf(stderr, "Memory reallocation failed par->links\n");
-                            exit(1);
+                        if (par->links_num >= par->links_capacity) {
+                            par->links_capacity *= 2;  // Double the capacity
+                            par->links = (Links*) safe_realloc_links(par->links, par->links_capacity * sizeof(Links), "par->links");
                         }
 
                         par->link_with[par->link_withnum] = par2->id;
                         par->link_withnum += 1;
-                        par->link_with = (int*) safe_realloc(par->link_with, (par->link_withnum + 2) * sizeof(int));
+
+                        if (par->link_withnum >= par->link_with_capacity) {
+                            par->link_with_capacity *= 2;  // Double the capacity
+                            par->link_with = (int*) safe_realloc(par->link_with, par->link_with_capacity * sizeof(int), "par->link_with");
+                        }
 
                         par2->link_with[par2->link_withnum] = par->id;
                         par2->link_withnum += 1;
 
-                        par2->link_with = (int*) safe_realloc(par2->link_with, (par2->link_withnum + 2) * sizeof(int));
+                        if (par2->link_withnum >= par2->link_with_capacity) {
+                            par2->link_with_capacity *= 2;  // Double the capacity
+                            par2->link_with = (int*) safe_realloc(par2->link_with, par2->link_with_capacity * sizeof(int), "par2->link_with");
+                        }
 
                         newlinks += 1;
                     }
@@ -173,8 +172,7 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
                     relink_random = rand() / RANDOM_MAX;
 
                     if (relink_random <= average_value(relink_chance_1, relink_chance_2)) {
-
-                        link->lenght = (float)pow(square_dist(par->loc, par2->loc, 3), 0.5);
+                        link->lenght = (float)sqrt(square_dist(par->loc, par2->loc, 3));
                         relink_stiff_2 = randomize_value(par2->sys->relink_stiff, par2->sys->relink_stiffrand);
                         relink_estiff_2 = randomize_value(par2->sys->relink_estiff, par2->sys->relink_estiffrand);
                         link->stiffness = average_value(relink_stiff_1, relink_stiff_2);
@@ -193,18 +191,27 @@ void create_link(int par_id, int max_link, int init, int parothers_id) {
                         par->links[par->links_num] = link[0];
                         par->links_num += 1;
                         par->links_activnum += 1;
-                        par->links = (Links*) realloc(par->links,(par->links_num + 1) * sizeof(Links));
-                        if (par->links  == NULL) {
-                            fprintf(stderr, "Memory reallocation failed par->links\n");
-                            exit(1);
+                        if (par->links_num >= par->links_capacity) {
+                            par->links_capacity *= 2;  // Double the capacity
+                            par->links = (Links*) safe_realloc_links(par->links, par->links_capacity * sizeof(Links), "par->links");
                         }
 
                         par->link_with[par->link_withnum] = par2->id;
                         par->link_withnum += 1;
-                        par->link_with = (int*) safe_realloc(par->link_with, (par->link_withnum + 1) * sizeof(int));
+
+                        if (par->link_withnum >= par->link_with_capacity) {
+                            par->link_with_capacity *= 2;  // Double the capacity
+                            par->link_with = (int*) safe_realloc(par->link_with, par->link_with_capacity * sizeof(int),"par->link_with");
+                        }
+
                         par2->link_with[par2->link_withnum] = par->id;
                         par2->link_withnum += 1;
-                        par2->link_with = (int*) safe_realloc(par2->link_with, (par2->link_withnum + 1) * sizeof(int));
+
+                        if (par2->link_withnum >= par2->link_with_capacity) {
+                            par2->link_with_capacity *= 2;  // Double the capacity
+                            par2->link_with = (int*) safe_realloc(par2->link_with, par2->link_with_capacity * sizeof(int),"par2->link_with");
+                        }
+
                         newlinks += 1;
                     }
                 }
@@ -231,10 +238,6 @@ void solve_link(Particle *par) {
     float stiff = 0;
     float damping = 0;
     float exp = 0;
-    float LengthX = 0;
-    float LengthY = 0;
-    float LengthZ = 0;
-    float Length = 0;
     float Vx = 0;
     float Vy = 0;
     float Vz = 0;
@@ -251,10 +254,6 @@ void solve_link(Particle *par) {
     float friction1 = 0;
     float friction2 = 0;
 
-    float Loc1[3] = {0, 0, 0};
-    float Loc2[3] = {0, 0, 0};
-    float V1[3] = {0, 0, 0};
-    float V2[3] = {0, 0, 0};
     float Force1[3] = {0, 0, 0};
     float Force2[3] = {0, 0, 0};
     float normal1[3] = {0, 0, 0};
@@ -276,32 +275,27 @@ void solve_link(Particle *par) {
 
             par1 = &parlist[par->links[i].start];
             par2 = &parlist[par->links[i].end];
-            Loc1[0] = par1->loc[0];
-            Loc1[1] = par1->loc[1];
-            Loc1[2] = par1->loc[2];
-            Loc2[0] = par2->loc[0];
-            Loc2[1] = par2->loc[1];
-            Loc2[2] = par2->loc[2];
-            V1[0] = par1->vel[0];
-            V1[1] = par1->vel[1];
-            V1[2] = par1->vel[2];
-            V2[0] = par2->vel[0];
-            V2[1] = par2->vel[1];
-            V2[2] = par2->vel[2];
+            
+            float Loc1[3] = {0, 0, 0}, Loc2[3] = {0, 0, 0}, V1[3] = {0, 0, 0}, V2[3] = {0, 0, 0};
+            float LengthX = 0, LengthY = 0, LengthZ = 0, Length = 0;
+
+            memcpy(Loc1, par1->loc, sizeof(Loc1));
+            memcpy(Loc2, par2->loc, sizeof(Loc2));
+            memcpy(V1, par1->vel, sizeof(V1));
+            memcpy(V2, par2->vel, sizeof(V2));
+
             LengthX = Loc2[0] - Loc1[0];
             LengthY = Loc2[1] - Loc1[1];
             LengthZ = Loc2[2] - Loc1[2];
-            Length = (float)pow(pow(LengthX, 2) + pow(LengthY, 2) + pow(LengthZ, 2), 0.5);
+            Length = (float)sqrt(pow(LengthX, 2) + pow(LengthY, 2) + pow(LengthZ, 2));
 
             if (par->links[i].lenght != Length && Length != 0) {
-
+                
                 if (par->links[i].lenght > Length) {
                     stiff = par->links[i].stiffness * deltatime;
                     damping = par->links[i].damping;
                     exp = (float)par->links[i].exponent;
-                }
-
-                if (par->links[i].lenght < Length) {
+                } else if (par->links[i].lenght < Length) {
                     stiff = par->links[i].estiffness * deltatime;
                     damping = par->links[i].edamping;
                     exp = (float)par->links[i].eexponent;
@@ -313,17 +307,22 @@ void solve_link(Particle *par) {
                 V = (Vx * LengthX + Vy * LengthY + Vz * LengthZ) / Length;
                 ForceSpring = (float)pow((Length - par->links[i].lenght), exp) * stiff;
                 ForceDamper = damping * V;
-                ForceX = (ForceSpring + ForceDamper) * LengthX / Length;
-                ForceY = (ForceSpring + ForceDamper) * LengthY / Length;
-                ForceZ = (ForceSpring + ForceDamper) * LengthZ / Length;
+                float sum_force = ForceSpring + ForceDamper;
+                float LengthRatioX = LengthX / Length;
+                float LengthRatioY = LengthY / Length;
+                float LengthRatioZ = LengthZ / Length;
+                ForceX = (sum_force) * LengthRatioX;
+                ForceY = (sum_force) * LengthRatioY;
+                ForceZ = (sum_force) * LengthRatioZ;
                 Force1[0] = ForceX;
                 Force1[1] = ForceY;
                 Force1[2] = ForceZ;
                 Force2[0] = -ForceX;
                 Force2[1] = -ForceY;
                 Force2[2] = -ForceZ;
-                ratio1 = (par2->mass/(par1->mass + par2->mass));
-                ratio2 = (par1->mass/(par1->mass + par2->mass));
+                float sum_mass = par1->mass + par2->mass;
+                ratio1 = (par2->mass/(sum_mass));
+                ratio2 = (par1->mass/(sum_mass));
 
                 if (par1->state == 3) {    /* dead particle, correct velocity ratio of alive partner */
                     ratio1 = 0;
@@ -333,47 +332,34 @@ void solve_link(Particle *par) {
                     ratio2 = 0;
                 }
 
-                par1->vel[0] += Force1[0] * ratio1;
-                par1->vel[1] += Force1[1] * ratio1;
-                par1->vel[2] += Force1[2] * ratio1;
-                par2->vel[0] += Force2[0] * ratio2;
-                par2->vel[1] += Force2[1] * ratio2;
-                par2->vel[2] += Force2[2] * ratio2;
+                for (int i = 0; i < 3; i++) {
+                    par1->vel[i] += Force1[i] * ratio1;
+                    par2->vel[i] += Force2[i] * ratio2;
+                }
 
-                normal1[0] = LengthX / Length;
-                normal1[1] = LengthY / Length;
-                normal1[2] = LengthZ / Length;
-                normal2[0] = normal1[0] * -1;
-                normal2[1] = normal1[1] * -1;
-                normal2[2] = normal1[2] * -1;
+                normal1[0] = LengthRatioX;
+                normal1[1] = LengthRatioY;
+                normal1[2] = LengthRatioZ;
+                normal2[0] = -LengthRatioX;
+                normal2[1] = -LengthRatioY;
+                normal2[2] = -LengthRatioZ;
 
                 factor1 = dot_product(par1->vel, normal1);
-
-                ypar1_vel[0] = factor1 * normal1[0];
-                ypar1_vel[1] = factor1 * normal1[1];
-                ypar1_vel[2] = factor1 * normal1[2];
-                xpar1_vel[0] = par1->vel[0] - ypar1_vel[0];
-                xpar1_vel[1] = par1->vel[1] - ypar1_vel[1];
-                xpar1_vel[2] = par1->vel[2] - ypar1_vel[2];
-
                 factor2 = dot_product(par2->vel, normal2);
-
-                ypar2_vel[0] = factor2 * normal2[0];
-                ypar2_vel[1] = factor2 * normal2[1];
-                ypar2_vel[2] = factor2 * normal2[2];
-                xpar2_vel[0] = par2->vel[0] - ypar2_vel[0];
-                xpar2_vel[1] = par2->vel[1] - ypar2_vel[1];
-                xpar2_vel[2] = par2->vel[2] - ypar2_vel[2];
 
                 friction1 = 1 - ((par->links[i].friction) * ratio1);
                 friction2 = 1 - ((par->links[i].friction) * ratio2);
 
-                par1->vel[0] = ypar1_vel[0] + ((xpar1_vel[0] * friction1) + (xpar2_vel[0] * (1 - friction1)));
-                par1->vel[1] = ypar1_vel[1] + ((xpar1_vel[1] * friction1) + (xpar2_vel[1] * (1 - friction1)));
-                par1->vel[2] = ypar1_vel[2] + ((xpar1_vel[2] * friction1) + (xpar2_vel[2] * (1 - friction1)));
-                par2->vel[0] = ypar2_vel[0] + ((xpar2_vel[0] * friction2) + (xpar1_vel[0] * (1 - friction2)));
-                par2->vel[1] = ypar2_vel[1] + ((xpar2_vel[1] * friction2) + (xpar1_vel[1] * (1 - friction2)));
-                par2->vel[2] = ypar2_vel[2] + ((xpar2_vel[2] * friction2) + (xpar1_vel[2] * (1 - friction2)));
+                for (int i = 0; i < 3; i++) {
+                    ypar1_vel[i] = factor1 * normal1[i];
+                    xpar1_vel[i] = par1->vel[i] - ypar1_vel[i];
+                    ypar2_vel[i] = factor2 * normal2[i];
+                    xpar2_vel[i] = par2->vel[i] - ypar2_vel[i];
+
+                    par1->vel[i] = ypar1_vel[i] + ((xpar1_vel[i] * friction1) + (xpar2_vel[i] * (1 - friction1)));
+                    par2->vel[i] = ypar2_vel[i] + ((xpar2_vel[i] * friction2) + (xpar1_vel[i] * (1 - friction2)));
+                }
+
 
                 if (Length > (par->links[i].lenght * (1 + par->links[i].ebroken)) || Length < (par->links[i].lenght  * (1 - par->links[i].broken))) {
 

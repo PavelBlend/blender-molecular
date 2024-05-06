@@ -1,5 +1,7 @@
 static PyObject* memfree(PyObject *self, PyObject *args) {
-    printf("=============> Free Memory");
+    (void)self;  // Unused parameter for Python
+    (void)args;  // Unused parameter for Python
+    printf("=============> Free Memory Start");
     int i = 0;
 
     fps = 0;
@@ -105,19 +107,77 @@ static PyObject* memfree(PyObject *self, PyObject *args) {
 }
 
 void* safe_malloc(size_t size, const char* var_name) {
-    void* ptr = malloc(size);
-    if (ptr == NULL) {
-        fprintf(stderr, "Memory allocation failed for %s\n", var_name);
-        exit(1);
+    void* ptr = NULL;
+    int attempts = 0;
+    while (ptr == NULL && attempts < MAX_ATTEMPTS) {
+        ptr = malloc(size);
+        if (ptr) {
+        return ptr;
+        } else {
+            attempts++;
+            fprintf(stderr, "Memory allocation failed for %s after %d attempts\n", var_name, attempts);
+            // Handle error here if needed
+        }
     }
+    fprintf(stderr, "Memory allocation failed for %s after %d attempts\n", var_name, attempts);
     return ptr;
 }
 
-int* safe_realloc(int* ptr, size_t size) {
-    int* new_ptr = (int*) realloc(ptr, size);
-    if (new_ptr == NULL) {
-        fprintf(stderr, "Memory reallocation failed\n");
-        exit(1);
+int* safe_realloc(int* ptr, size_t size, const char* var_name) {
+    int* new_ptr = NULL;
+    int attempts = 0;
+    while (attempts < MAX_ATTEMPTS) {
+        new_ptr = (int*) realloc(ptr, size);
+
+        if (new_ptr) {
+            return new_ptr;
+        } else {
+            attempts++;
+            fprintf(stderr, "Memory reallocation failed for %s after %d attempts\n", var_name, attempts);
+            // Handle error here if needed
+        }
     }
-    return new_ptr;
+
+    fprintf(stderr, "Memory reallocation failed for %s after %d attempts\n", var_name, attempts);
+    return NULL;
+}
+
+Links* safe_realloc_links(Links* ptr, size_t size, const char* var_name) {
+    Links* temp = NULL;
+    int attempts = 0;
+    while (attempts < MAX_ATTEMPTS) {
+        temp = (Links*) realloc(ptr, size);
+        if (temp) {
+            return temp;
+        } else {
+            attempts++;
+            fprintf(stderr, "Memory reallocation failed for %s after %d attempts\n", var_name, attempts);
+            // Handle error here if needed
+        }
+    }
+
+    fprintf(stderr, "Memory reallocation failed for %s after %d attempts\n", var_name, attempts);
+    return NULL;
+}
+
+// Function to allocate memory using calloc with retry
+void* safe_calloc(size_t numElements, size_t elementSize, const char* var_name) {
+    void* ptr = NULL;
+    int attempts = 0;
+
+    while (attempts < MAX_ATTEMPTS) {
+        ptr = calloc(numElements, elementSize);
+        if (ptr) {
+            // Allocation succeeded
+            return ptr;
+        } else {
+            // Allocation failed; retry
+            attempts++;
+            fprintf(stderr,"Memory allocation failed for %s after %d attempts\n", var_name, attempts);
+        }
+    }
+
+    // Allocation still failed after maxAttempts
+    fprintf(stderr,"Memory allocation failed for %s after %d attempts\n", var_name, attempts);
+    return NULL;
 }

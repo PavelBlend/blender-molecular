@@ -1,9 +1,8 @@
 void update(PyObject *mol_data) {
-    int i;
     int ii;
     int par_state;
 
-    for (i=0; i<psysnum; i++) {
+    for (int i=0; i<psysnum; i++) {
         PyObject* psys_props = PyList_GetItem(mol_data, i);
 
         PyObject* location = PyList_GetItem(psys_props, 0);
@@ -28,7 +27,7 @@ void update(PyObject *mol_data) {
 
                 if (psys[i].links_active == 1) {
                     KDTree_rnn_query(kdtree, &psys[i].particles[ii], psys[i].particles[ii].loc, psys[i].particles[ii].sys->link_length);
-                    create_link(psys[i].particles[ii].id, psys[i].link_max, 0, -1);
+                    create_link(psys[i].particles[ii].id, psys[i].link_max, -1);
                     psys[i].particles[ii].neighboursnum = 0;
                 }
 
@@ -39,7 +38,7 @@ void update(PyObject *mol_data) {
                 psys[i].particles[ii].state = par_state;
             }
 
-            psys[i].particles[ii].collided_with = (int*) safe_realloc(psys[i].particles[ii].collided_with, sizeof(int));
+            psys[i].particles[ii].collided_with = (int*) safe_realloc(psys[i].particles[ii].collided_with, sizeof(int),"collided_with");
             psys[i].particles[ii].collided_num = 0;
         }
     }

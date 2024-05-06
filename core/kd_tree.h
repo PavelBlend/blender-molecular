@@ -3,10 +3,12 @@ void KDTree_rnn_search(KDTree *kdtree, Particle *par, Node node, float point[3],
     int axis = 0;
     float realsqdist = 0;
 
-    if (node.index == -1) {
+    if (node.index <= -1) {
         return;
     }
 
+    if (node.particle == NULL)
+        return;
     SParticle tparticle = node.particle[0];
 
     axis = kdtree->axis[depth];
@@ -19,28 +21,30 @@ void KDTree_rnn_search(KDTree *kdtree, Particle *par, Node node, float point[3],
             par->neighboursnum++;
             if (par->neighboursnum >= par->neighboursmax) {
                 par->neighboursmax = par->neighboursmax * 2;
-                // par->neighbours = (int*) realloc(par->neighbours, par->neighboursmax * sizeof(int));
-                par->neighbours = safe_realloc(par->neighbours, par->neighboursmax * sizeof(int));
+                par->neighbours = safe_realloc(par->neighbours, par->neighboursmax * sizeof(int),"par->neighbours");
             }
             par->neighbours[par->neighboursnum-1] = node.particle[0].id;
         }
 
-        KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
-        KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
+        if (node.left_child != NULL)
+            KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
+        if (node.right_child != NULL)
+            KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
     }
 
     else {
         if (point[axis] <= tparticle.loc[axis]) {
-            KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
+            if (node.left_child != NULL)
+                KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
         }
 
         if (point[axis] >= tparticle.loc[axis]) {
-            KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
+            if (node.right_child != NULL)
+                KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
         }
     }
 
 }
-
 
 int KDTree_rnn_query(KDTree *kdtree, Particle *par, float point[3], float dist) {
     float sqdist = 0;
@@ -60,10 +64,9 @@ int KDTree_rnn_query(KDTree *kdtree, Particle *par, float point[3], float dist) 
     return 0;
 }
 
-
 Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end, int name, int parent, int depth, int initiate) {
     int index = 0;
-    int len = end - start + 1;
+    int len = (end - start) + 1;
 
     if (len <= 0) {
         return kdtree->nodes[kdtree->numnodes];
@@ -124,31 +127,29 @@ void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     }
 
     kdtree->numnodes = i;
-    kdtree->nodes = (Node*)safe_malloc((kdtree->numnodes + 1) * sizeof(Node), "kdtree->nodes");
-    kdtree->root_node = (Node*)safe_malloc(sizeof(Node), "kdtree->root_node");
 
+    kdtree->nodes = (Node*)safe_malloc((kdtree->numnodes + 1) * sizeof(Node), "kdtree-nodes");
+    kdtree->root_node = (Node*)safe_malloc(sizeof(Node), "kdtree-root_node");
 
     for (int i=0; i<=kdtree->numnodes; i++) {
         kdtree->nodes[i].index = i;
         kdtree->nodes[i].name = -1;
         kdtree->nodes[i].parent = -1;
 
-        kdtree->nodes[i].particle = (SParticle*)safe_malloc(sizeof(SParticle), "kdtree->nodes[i].particle");
-        kdtree->nodes[i].left_child = (Node*)safe_malloc(sizeof(Node), "kdtree->nodes[i].left_child");
-        kdtree->nodes[i].right_child = (Node*)safe_malloc(sizeof(Node), "kdtree->nodes[i].right_child");
+        kdtree->nodes[i].particle = (SParticle*)safe_malloc(sizeof(SParticle), "kdtree-particle");
+        kdtree->nodes[i].left_child = (Node*)safe_malloc(sizeof(Node), "kdtree-left_child");
+        kdtree->nodes[i].right_child = (Node*)safe_malloc(sizeof(Node), "kdtree-right_child");
 
         kdtree->nodes[i].left_child[0].index = -1;
         kdtree->nodes[i].right_child[0].index = -1;
     }
 
-    kdtree->nodes[kdtree->numnodes].index = -1;
-
-    kdtree->thread_nodes = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_nodes");
-    kdtree->thread_start = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_start");
-    kdtree->thread_end = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_end");
-    kdtree->thread_name = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_name");
-    kdtree->thread_parent = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_parent");
-    kdtree->thread_depth = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_depth");
+    kdtree->thread_nodes = (int*)safe_malloc(128 * sizeof(int), "thread_nodes");
+    kdtree->thread_start = (int*)safe_malloc(128 * sizeof(int), "thread_start");
+    kdtree->thread_end = (int*)safe_malloc(128 * sizeof(int), "thread_end");
+    kdtree->thread_name = (int*)safe_malloc(128 * sizeof(int), "thread_name");
+    kdtree->thread_parent = (int*)safe_malloc(128 * sizeof(int), "thread_parent");
+    kdtree->thread_depth = (int*)safe_malloc(128 * sizeof(int), "thread_depth");
 
 
     for (int i=0; i<64; i++) {

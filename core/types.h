@@ -2,6 +2,7 @@ typedef struct SParticle SParticle;
 typedef struct ParSys ParSys;
 typedef struct Node Node;
 typedef struct KDTree KDTree;
+typedef struct Octree Octree;
 typedef struct Links Links;
 typedef struct Particle Particle;
 typedef struct Pool Pool;
@@ -24,6 +25,7 @@ struct Node {
     char name;
 
     SParticle *particle;
+    // Node *children[8];
     Node *left_child;
     Node *right_child;
 };
@@ -46,6 +48,22 @@ struct KDTree {
     Node *nodes;
 };
 
+struct Octree {
+    char axis[64];
+
+    int numnodes;
+    int thread_index;
+
+    int *thread_nodes;
+    int *thread_start;
+    int *thread_end;
+    int *thread_name;
+    int *thread_parent;
+    int *thread_depth;
+
+    Node *root_node;
+    Node *nodes;
+};
 
 struct Links {
     int start;
@@ -72,6 +90,8 @@ struct Particle {
     int links_activnum;
     int link_withnum;
     int collided_num;
+    int links_capacity;
+    int link_with_capacity;
 
     int *collided_with;
     int *link_with;
