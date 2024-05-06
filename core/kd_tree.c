@@ -3,10 +3,12 @@ void KDTree_rnn_search(KDTree *kdtree, Particle *par, Node node, float point[3],
     int axis = 0;
     float realsqdist = 0;
 
-    if (node.index == -1) {
+    if (node.index <= -1) {
         return;
     }
 
+    if (node.particle == NULL)
+        return;
     SParticle tparticle = node.particle[0];
 
     axis = kdtree->axis[depth];
@@ -19,23 +21,26 @@ void KDTree_rnn_search(KDTree *kdtree, Particle *par, Node node, float point[3],
             par->neighboursnum++;
             if (par->neighboursnum >= par->neighboursmax) {
                 par->neighboursmax = par->neighboursmax * 2;
-                // par->neighbours = (int*) realloc(par->neighbours, par->neighboursmax * sizeof(int));
-                par->neighbours = safe_realloc(par->neighbours, par->neighboursmax * sizeof(int));
+                par->neighbours = safe_realloc(par->neighbours, par->neighboursmax * sizeof(int),"par->neighbours");
             }
             par->neighbours[par->neighboursnum-1] = node.particle[0].id;
         }
 
-        KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
-        KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
+        if (node.left_child != NULL)
+            KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
+        if (node.right_child != NULL)
+            KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
     }
 
     else {
         if (point[axis] <= tparticle.loc[axis]) {
-            KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
+            if (node.left_child != NULL)
+                KDTree_rnn_search(kdtree, &par[0], node.left_child[0], point, dist, sqdist, 3, depth + 1);
         }
 
         if (point[axis] >= tparticle.loc[axis]) {
-            KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
+            if (node.right_child != NULL)
+                KDTree_rnn_search(kdtree, &par[0], node.right_child[0], point, dist, sqdist, 3, depth + 1);
         }
     }
 
