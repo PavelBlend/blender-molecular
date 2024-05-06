@@ -64,10 +64,9 @@ int KDTree_rnn_query(KDTree *kdtree, Particle *par, float point[3], float dist) 
     return 0;
 }
 
-
 Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end, int name, int parent, int depth, int initiate) {
     int index = 0;
-    int len = end - start + 1;
+    int len = (end - start) + 1;
 
     if (len <= 0) {
         return kdtree->nodes[kdtree->numnodes];
@@ -112,12 +111,21 @@ Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end
         }
     }
 
+    // #pragma omp task shared(kdtree, kdparlist)
+    // kdtree->nodes[index].left_child[0] = KDTree_create_tree(kdtree, kdparlist, start, median - 1, 1, index, depth + 1, initiate);
+
+    // #pragma omp task shared(kdtree, kdparlist)
+    // kdtree->nodes[index].right_child[0] = KDTree_create_tree(kdtree, kdparlist, median + 1, end, 2, index, depth + 1, initiate);
+
+    // #pragma omp taskwait
+
     kdtree->nodes[index].left_child[0] = KDTree_create_tree(kdtree, kdparlist, start, median - 1, 1, index, depth + 1, initiate);
     kdtree->nodes[index].right_child[0] = KDTree_create_tree(kdtree, kdparlist, median + 1, end, 2, index, depth + 1, initiate);
 
     return kdtree->nodes[index];
 
 }
+
 
 
 void KDTree_create_nodes(KDTree *kdtree, int parnum) {
