@@ -24,7 +24,6 @@ static PyObject* init(PyObject *self, PyObject *args) {
     int i = 0;
     int ii = 0;
     int jj = 0;
-    int index = 0;
 
     newlinks = 0;
     totallinks = 0;
@@ -37,13 +36,10 @@ static PyObject* init(PyObject *self, PyObject *args) {
     cpunum = (int)PyLong_AsLongLong(PyList_GetItem(sim_settings, 4));
 
     omp_set_num_threads(cpunum);
+    omp_set_max_active_levels(1);
 
     deltatime = fps * (float)(substep);
 
-    // psys = (ParSys*) malloc(psysnum * sizeof(ParSys));
-    // parlist = (Particle*) malloc(parnum * sizeof(Particle));
-    // parlistcopy = (SParticle*) malloc(parnum * sizeof(SParticle));
-    // par_id_list = (int*) malloc(parnum * sizeof(int));
     psys = (ParSys*)safe_malloc(psysnum * sizeof(ParSys), "psys");
     parlist = (Particle*)safe_malloc(parnum * sizeof(Particle), "parlist");
     parlistcopy = (SParticle*)safe_malloc(parnum * sizeof(SParticle), "parlistcopy");
@@ -56,7 +52,6 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
         psys[i].id = i;
         psys[i].parnum = (int)PyLong_AsLongLong(PyList_GetItem(psys_props, 0));
-        //psys[i].particles = (Particle*) malloc(psys[i].parnum * sizeof(Particle));
         psys[i].particles = (Particle*)safe_malloc(psys[i].parnum * sizeof(Particle), "psys[i].particles");
         psys[i].particles = &parlist[jj];
 
@@ -136,31 +131,17 @@ static PyObject* init(PyObject *self, PyObject *args) {
 
             parlist[jj].sys = &psys[i];
 
-            // parlist[jj].collided_with = (int*) malloc(sizeof(int));
-            // parlist[jj].collided_num = 0;
-
-            // parlist[jj].links = (Links*) malloc(sizeof(Links));
-            // parlist[jj].links_num = 0;
-
-            // parlist[jj].links_activnum = 0;
-
-            // parlist[jj].link_with = (int*) malloc(sizeof(int));
-            // parlist[jj].link_withnum = 0;
-
-            // parlist[jj].neighboursmax = 10;
-
-            // parlist[jj].neighbours = (int*) malloc(parlist[jj].neighboursmax * sizeof(int));
-            // parlist[jj].neighboursnum = 0;
-
             parlist[jj].collided_with = (int*)safe_malloc(sizeof(int), "parlist[jj].collided_with");
             parlist[jj].collided_num = 0;
 
-            parlist[jj].links = (Links*)safe_malloc(sizeof(Links), "parlist[jj].links");
+            parlist[jj].links_capacity = INITIAL_CAPACITY;
+            parlist[jj].links = (Links*)safe_malloc(parlist[jj].links_capacity * sizeof(Links), "parlist[jj].links");
             parlist[jj].links_num = 0;
 
             parlist[jj].links_activnum = 0;
 
-            parlist[jj].link_with = (int*)safe_malloc(sizeof(int), "parlist[jj].link_with");
+            parlist[jj].link_with_capacity = INITIAL_WITH_CAPACITY;
+            parlist[jj].link_with = (int*)safe_malloc(parlist[jj].link_with_capacity * sizeof(int), "parlist[jj].link_with");
             parlist[jj].link_withnum = 0;
 
             parlist[jj].neighboursmax = 10;
@@ -173,7 +154,7 @@ static PyObject* init(PyObject *self, PyObject *args) {
     }
 
     jj = 0;
-    //kdtree = (KDTree*) malloc(sizeof(KDTree));
+
     kdtree = (KDTree*)safe_malloc(sizeof(KDTree), "kdtree");
     KDTree_create_nodes(kdtree, parnum);
 
@@ -183,15 +164,12 @@ static PyObject* init(PyObject *self, PyObject *args) {
         #pragma omp for schedule(dynamic, 10)
         for (i=0; i<parnum; i++) {
             parlistcopy[i].id = parlist[i].id;
-            parlistcopy[i].loc[0] = parlist[i].loc[0];
-            parlistcopy[i].loc[1] = parlist[i].loc[1];
-            parlistcopy[i].loc[2] = parlist[i].loc[2];
+            memcpy(parlistcopy[i].loc, parlist[i].loc, sizeof(parlist[i].loc));
         }
     }
 
     KDTree_create_tree(kdtree, parlistcopy, 0, parnum - 1, 0, -1, 0, 1);
 
-    // #pragma omp parallel for schedule(dynamic, 10)
     #pragma omp parallel
     {
         int i;
@@ -210,7 +188,6 @@ static PyObject* init(PyObject *self, PyObject *args) {
         }
     }
 
-    // #pragma omp parallel for schedule(dynamic, 10)
     #pragma omp parallel
     {
         int i;
@@ -222,9 +199,8 @@ static PyObject* init(PyObject *self, PyObject *args) {
         }
     }
 
-    // #pragma omp parallel for private(i)
     for (i=0; i<parnum; i++) {
-        create_link(parlist[i].id, parlist[i].sys->link_max, 1, -1);
+        create_link(parlist[i].id, parlist[i].sys->link_max, -1);
 
         if (parlist[i].neighboursnum > 1) {
             parlist[i].neighboursnum = 0;
