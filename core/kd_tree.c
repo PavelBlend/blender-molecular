@@ -111,22 +111,12 @@ Node KDTree_create_tree(KDTree *kdtree, SParticle *kdparlist, int start, int end
         }
     }
 
-    // #pragma omp task shared(kdtree, kdparlist)
-    // kdtree->nodes[index].left_child[0] = KDTree_create_tree(kdtree, kdparlist, start, median - 1, 1, index, depth + 1, initiate);
-
-    // #pragma omp task shared(kdtree, kdparlist)
-    // kdtree->nodes[index].right_child[0] = KDTree_create_tree(kdtree, kdparlist, median + 1, end, 2, index, depth + 1, initiate);
-
-    // #pragma omp taskwait
-
     kdtree->nodes[index].left_child[0] = KDTree_create_tree(kdtree, kdparlist, start, median - 1, 1, index, depth + 1, initiate);
     kdtree->nodes[index].right_child[0] = KDTree_create_tree(kdtree, kdparlist, median + 1, end, 2, index, depth + 1, initiate);
 
     return kdtree->nodes[index];
 
 }
-
-
 
 void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     int i = 2;
@@ -136,8 +126,8 @@ void KDTree_create_nodes(KDTree *kdtree, int parnum) {
     }
 
     kdtree->numnodes = i;
-    kdtree->nodes = (Node*)safe_malloc((kdtree->numnodes + 1) * sizeof(Node), "kdtree->nodes");
-    kdtree->root_node = (Node*)safe_malloc(sizeof(Node), "kdtree->root_node");
+    kdtree->nodes = (Node*)safe_malloc((kdtree->numnodes + 1) * sizeof(Node), "kdtree-nodes");
+    kdtree->root_node = (Node*)safe_malloc(sizeof(Node), "kdtree-root_node");
 
 
     for (int i=0; i<=kdtree->numnodes; i++) {
@@ -145,22 +135,20 @@ void KDTree_create_nodes(KDTree *kdtree, int parnum) {
         kdtree->nodes[i].name = -1;
         kdtree->nodes[i].parent = -1;
 
-        kdtree->nodes[i].particle = (SParticle*)safe_malloc(sizeof(SParticle), "kdtree->nodes[i].particle");
-        kdtree->nodes[i].left_child = (Node*)safe_malloc(sizeof(Node), "kdtree->nodes[i].left_child");
-        kdtree->nodes[i].right_child = (Node*)safe_malloc(sizeof(Node), "kdtree->nodes[i].right_child");
+        kdtree->nodes[i].particle = (SParticle*)safe_malloc(sizeof(SParticle), "kdtree-particle");
+        kdtree->nodes[i].left_child = (Node*)safe_malloc(sizeof(Node), "kdtree-left_child");
+        kdtree->nodes[i].right_child = (Node*)safe_malloc(sizeof(Node), "kdtree-right_child");
 
         kdtree->nodes[i].left_child[0].index = -1;
         kdtree->nodes[i].right_child[0].index = -1;
     }
 
-    kdtree->nodes[kdtree->numnodes].index = -1;
-
-    kdtree->thread_nodes = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_nodes");
-    kdtree->thread_start = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_start");
-    kdtree->thread_end = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_end");
-    kdtree->thread_name = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_name");
-    kdtree->thread_parent = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_parent");
-    kdtree->thread_depth = (int*)safe_malloc(128 * sizeof(int), "kdtree->thread_depth");
+    kdtree->thread_nodes = (int*)safe_malloc(128 * sizeof(int), "thread_nodes");
+    kdtree->thread_start = (int*)safe_malloc(128 * sizeof(int), "thread_start");
+    kdtree->thread_end = (int*)safe_malloc(128 * sizeof(int), "thread_end");
+    kdtree->thread_name = (int*)safe_malloc(128 * sizeof(int), "thread_name");
+    kdtree->thread_parent = (int*)safe_malloc(128 * sizeof(int), "thread_parent");
+    kdtree->thread_depth = (int*)safe_malloc(128 * sizeof(int), "thread_depth");
 
 
     for (int i=0; i<64; i++) {
