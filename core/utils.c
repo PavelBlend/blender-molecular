@@ -1,12 +1,16 @@
 float randomize_value(float value, float random) {
-    return value * (1.0 + ((rand() / RANDOM_MAX) * random) - (random / 2));
+    if (random == 0 || random == 1) {
+        // Handle the case where random is 0 or 1 (e.g., return value, return a default value, etc.)
+        return value;
+    } else {
+        return value * (1.0f + (((float)rand() / RANDOM_MAX) * random) - (random / 2));
+    }
 }
 
 
 void quick_sort(SParticle *a, int n, int axis) {
-    if (n < 2) {
+    if (n < 2)
         return;
-    }
 
     SParticle t;
     float p = a[n / 2].loc[axis];
@@ -39,8 +43,8 @@ void quick_sort(SParticle *a, int n, int axis) {
         r -= 1;
     }
 
-    quick_sort(a, r - a + 1, axis);
-    quick_sort(l, a + n - l, axis);
+    quick_sort(a, (int)(r - a + 1), axis);
+    quick_sort(l, (int)(a + n - l), axis);
 }
 
 
