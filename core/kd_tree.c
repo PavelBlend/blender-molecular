@@ -46,7 +46,6 @@ void KDTree_rnn_search(KDTree *kdtree, Particle *par, Node node, float point[3],
 
 }
 
-
 int KDTree_rnn_query(KDTree *kdtree, Particle *par, float point[3], float dist) {
     float sqdist = 0;
     par->neighboursnum = 0;
