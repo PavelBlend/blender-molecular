@@ -14,6 +14,7 @@
 #include "mathutils.c"
 #include "memory.c"
 #include "kd_tree.c"
+// #include "octree.c"
 #include "link.c"
 #include "collide.c"
 #include "init.c"
