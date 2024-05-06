@@ -1,3 +1,5 @@
+#include "simulation.h"
+
 static PyObject* simulate(PyObject *self, PyObject *args) {
 
     // parse import data
