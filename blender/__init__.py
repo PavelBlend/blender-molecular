@@ -3,8 +3,8 @@ bl_info = {
     'author':
         'Jean-Francois Gallant (PyroEvil), '
         'Pavel_Blend, '
-        'Martin Felke (scorpion81), ',
-        'Omid Ghotbi'
+        'Martin Felke (scorpion81), '
+        'Omid Ghotbi',
     'version': (1, 2, 0),
     'blender': (2, 80, 0),
     'location': 'Properties > Particle Properties',
